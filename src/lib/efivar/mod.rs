@@ -20,7 +20,7 @@ pub mod attributes {
         = EfivarAttribute::init("Authenticated Write Access", 0x10);
 
     pub static TIME_BASED_AUTHENTICATED_WRITE_ACCESS:EfivarAttribute
-        = EfivarAttribute::init("Time Based Authenticated Write Access", 0x20);
+        = EfivarAttribute::init("Time-Based Authenticated Write Access", 0x20);
 
     pub static APPEND_WRITE:EfivarAttribute
         = EfivarAttribute::init("Append Write", 0x40);
