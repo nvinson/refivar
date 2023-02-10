@@ -4,7 +4,7 @@ project('refivar', 'rust',
 
 
 # Third-party libraries
-tp_r_lib_argparse = subproject('rust-argparse-v0.2.2_p20181221').get_variable('tp_r_lib_rust_argparse')
+tp_r_lib_argparse = subproject('rust-argparse-v0.2.2_p20230209').get_variable('tp_r_lib_rust_argparse')
 
 r_lib_efivar = static_library('efivar', 'src/lib/efivar/mod.rs', rust_crate_type: 'lib', install: false)
 #a_lib_efivar = static_library('efivar', 'efivar.rs', rust_crate_type: 'staticlib', install : true)
