@@ -30,7 +30,7 @@ use action::IFlagAction;
 use self::ArgumentKind::{Positional, ShortOption, LongOption, Delimiter};
 
 
-static OPTION_WIDTH: usize = 24;
+static OPTION_WIDTH: usize = 36;
 static TOTAL_WIDTH: usize = 79;
 
 
@@ -613,11 +613,13 @@ pub struct ArgumentParser<'parser> {
     options: Vec<Rc<GenericOption<'parser>>>,
     arguments: Vec<Rc<GenericArgument<'parser>>>,
     env_vars: Vec<Rc<EnvVar<'parser>>>,
+    error_message_before_usage: bool,
     catchall_argument: Option<Rc<GenericArgument<'parser>>>,
     short_options: HashMap<char, Rc<GenericOption<'parser>>>,
     long_options: HashMap<String, Rc<GenericOption<'parser>>>,
     stop_on_first_argument: bool,
     silence_double_dash: bool,
+    usage_is_help: bool,
 }
 
 
@@ -631,6 +633,7 @@ impl<'parser> ArgumentParser<'parser> {
             description: "",
             vars: Vec::new(),
             env_vars: Vec::new(),
+            error_message_before_usage: false,
             arguments: Vec::new(),
             catchall_argument: None,
             options: Vec::new(),
@@ -638,9 +641,12 @@ impl<'parser> ArgumentParser<'parser> {
             long_options: HashMap::new(),
             stop_on_first_argument: false,
             silence_double_dash: true,
+            usage_is_help: false,
             };
-        ap.add_option_for(None, &["-h", "--help"], Flag(Box::new(HelpAction)),
-            "Show this help message and exit");
+        ap.add_option_for(None, &["-?", "--help"], Flag(Box::new(HelpAction)),
+            "show this help message");
+        ap.add_option_for(None, &["--usage"], Flag(Box::new(HelpAction)),
+            "display brief usage message");
         return ap;
     }
 
@@ -716,6 +722,20 @@ impl<'parser> ArgumentParser<'parser> {
         self.options.push(opt);
     }
 
+    /// Set Print Error Before Usage
+    ///
+    /// Always print the error message before printing usage.
+    pub fn set_error_before_usage(&mut self) {
+        self.error_message_before_usage = true;
+    }
+
+    /// Set Help as Usage
+    ///
+    /// Always print full help text when usage is needed.
+    pub fn set_help_as_usage(&mut self) {
+        self.usage_is_help = true;
+    }
+
     /// Print help
     ///
     /// Usually command-line option is used for printing help,
@@ -760,8 +780,13 @@ impl<'parser> ArgumentParser<'parser> {
     /// Only needed if you like to do some argument validation that is out
     /// of scope of the argparse
     pub fn error(&self, command: &str, message: &str, writer: &mut dyn Write) {
-        self.print_usage(command, writer).unwrap();
-        writeln!(writer, "{}: {}", command, message).ok();
+        if self.error_message_before_usage {
+            writeln!(writer, "{}: {}", command, message).ok();
+            self.print_usage(command, writer).unwrap();
+        } else {
+            self.print_usage(command, writer).unwrap();
+            writeln!(writer, "{}: {}", command, message).ok();
+        }
     }
 
     /// Configure parser to ignore options when first non-option argument is
@@ -822,7 +847,7 @@ impl<'a, 'b> HelpFormatter<'a, 'b> {
         -> IoResult<()>
     {
         return HelpFormatter { parser: parser, name: name, buf: writer }
-            .write_usage();
+            .write_usage(parser.usage_is_help);
     }
 
     pub fn print_help(parser: &ArgumentParser, name: &str, writer: &mut dyn Write)
@@ -857,18 +882,25 @@ impl<'a, 'b> HelpFormatter<'a, 'b> {
         let mut num = 2;
         write!(self.buf, "  ")?;
         let mut niter = opt.names.iter();
+        if opt.names.len() == 1 {
+            num += 4;
+            write!(self.buf, "    ")?;
+        }
+
         let name = niter.next().unwrap();
         write!(self.buf, "{}", name)?;
         num += name.len();
+
         for name in niter {
-            write!(self.buf, ",")?;
+            write!(self.buf, ", ")?;
             write!(self.buf, "{}", name)?;
-            num += name.len() + 1;
+            num += name.len() + 2;
         }
+
         match opt.action {
             Flag(_) => {}
             Single(_) | Push(_) | Many(_) => {
-                write!(self.buf, " ")?;
+                write!(self.buf, "=")?;
                 let var = &self.parser.vars[opt.varid.unwrap()];
                 write!(self.buf, "{}", &var.metavar[..])?;
                 num += var.metavar.len() + 1;
@@ -890,7 +922,7 @@ impl<'a, 'b> HelpFormatter<'a, 'b> {
     }
 
     fn write_help(&mut self) -> IoResult<()> {
-        self.write_usage()?;
+        self.write_usage(false)?;
         write!(self.buf, "\n")?;
         if !self.parser.description.is_empty() {
             wrap_text(self.buf, self.parser.description,TOTAL_WIDTH, 0)?;
@@ -914,14 +946,30 @@ impl<'a, 'b> HelpFormatter<'a, 'b> {
             || !self.parser.long_options.is_empty()
         {
             write!(self.buf, "\nOptional arguments:\n")?;
+            let mut help_options: Vec<&GenericOption<'_>> = Vec::new();
             for opt in self.parser.options.iter() {
+                match &opt.action {
+                    Flag(action) => {
+                        match action.parse_flag() {
+                            Help => help_options.push(&**opt),
+                            _ => self.print_option(&**opt)?,
+                        }
+                    },
+                    _ => self.print_option(&**opt)?,
+                }
+            }
+            write!(self.buf, "\nHelp options:\n")?;
+            for opt in help_options.iter() {
                 self.print_option(&**opt)?;
             }
         }
         return Ok(());
     }
 
-    fn write_usage(&mut self) -> IoResult<()> {
+    fn write_usage(&mut self, usage_is_help: bool) -> IoResult<()> {
+        if usage_is_help {
+            return self.write_help();
+        }
         write!(self.buf, "Usage:\n  ")?;
         write!(self.buf, "{}", self.name)?;
         if !self.parser.options.is_empty() {
