@@ -100,7 +100,6 @@ macro_rules! from_bytes {
 
 from_bytes!(i8, u8);
 
-
 impl FromStr for EfiGuid {
     type Err = EfiGuidError;
 
@@ -135,5 +134,13 @@ impl FromStr for EfiGuid {
                 Err(_) => Err(efi_guid_error::BAD_FORMAT),
             }.unwrap()
         });
+    }
+}
+
+impl TryFrom<&str> for EfiGuid {
+    type Error = EfiGuidError;
+
+    fn try_from(value: &str) -> Result<Self, EfiGuidError> {
+        return value.parse::<Self>();
     }
 }

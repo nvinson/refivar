@@ -1,16 +1,17 @@
 pub mod types;
+pub mod efivar_display;
 
-pub mod attributes {
+pub mod efi_variable_attributes {
     use types::EfiVariableAttribute;
 
     pub static NON_VOLATILE:EfiVariableAttribute
-        = EfiVariableAttribute::init("Non Volatile", 0x1);
+        = EfiVariableAttribute::init("Non-Volatile", 0x1);
 
     pub static BOOTSERVICE_ACCESS:EfiVariableAttribute
-        = EfiVariableAttribute::init("Bootservice Access", 0x2);
+        = EfiVariableAttribute::init("Boot Service Access", 0x2);
 
     pub static RUNTIME_ACCESS:EfiVariableAttribute
-        = EfiVariableAttribute::init("Runtime Access", 0x4);
+        = EfiVariableAttribute::init("Runtime Service Access", 0x4);
 
     pub static HARDWARE_ERROR_RECORD:EfiVariableAttribute
         = EfiVariableAttribute::init("Hardware Error Record", 0x8);

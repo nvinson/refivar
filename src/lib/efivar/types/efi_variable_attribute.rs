@@ -20,7 +20,7 @@ macro_rules! EfiVariableAttribute_field_value_maps {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Hash, Eq, PartialEq)]
 pub struct EfiVariableAttribute {
     name: &'static str,
     value: u64,
