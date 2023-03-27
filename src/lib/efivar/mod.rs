@@ -2,7 +2,7 @@ pub mod types;
 pub mod efivar_display;
 
 pub mod efi_variable_attributes {
-    use types::EfiVariableAttribute;
+    use crate::types::EfiVariableAttribute;
 
     pub static NON_VOLATILE:EfiVariableAttribute
         = EfiVariableAttribute::init("Non-Volatile", 0x1);

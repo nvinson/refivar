@@ -17,4 +17,4 @@ name = "efivar"
 path = "src/bin/efivar.rs"
 
 [dependencies]
-clap = { version = "4.1.13", default-features = false, features = ["std"] }
+clap = { version = "4.1.13", default-features = false, features = ["std", "cargo", "help", "wrap_help", "usage"] }

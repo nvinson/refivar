@@ -3,7 +3,7 @@ use std::fmt;
 use std::iter;
 use std::str::FromStr;
 use super::EfiGuidError;
-use types::efi_guid_error;
+use crate::types::efi_guid_error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct EfiGuid {

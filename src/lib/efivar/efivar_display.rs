@@ -1,5 +1,5 @@
 use std::fmt;
-use types::{EfiVariable, EfiVariableAttribute};
+use crate::types::{EfiVariable, EfiVariableAttribute};
 
 pub struct Verbose<'a>(pub &'a EfiVariable<'a>);
 pub struct Decimal<'a>(pub &'a EfiVariable<'a>);
