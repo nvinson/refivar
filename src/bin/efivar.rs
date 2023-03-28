@@ -1,27 +1,9 @@
-extern crate efivar;
-
 use clap;
-use efivar::{efivar_display, efi_variable_attributes};
-use std::collections::HashSet;
-use std::convert::TryInto;
+use efivar::{efi_guids, efi_variable_attributes, efivar_display};
 use std::process::ExitCode;
 
-#[derive(Eq, Hash, PartialEq)]
-enum ActionType {
-    Append,
-    Export,
-    Import,
-    List,
-    ListGuids,
-    Print,
-    Write
-}
-
-#[derive(Eq, Hash, PartialEq)]
-struct EfivarAction(ActionType);
-
-fn main() -> ExitCode {
-    let parser = clap::command!()
+fn create_parser() -> clap::Command {
+    return clap::command!()
         .args_override_self(true)
         .disable_help_flag(true)
         .disable_version_flag(true)
@@ -37,7 +19,7 @@ fn main() -> ExitCode {
             .short('l')
             .long("list")
             .help("list current variables")
-            .action(clap::ArgAction::Set)
+            .action(clap::ArgAction::SetTrue)
         )
         .arg(clap::Arg::new("print")
             .short('p')
@@ -114,7 +96,21 @@ fn main() -> ExitCode {
             .long("usage")
             .help("ignored for compatibility")
             .action(clap::ArgAction::Help)
-        )
-        .get_matches();
+        );
+}
+
+fn main() -> ExitCode {
+    let matches = create_parser().get_matches();
+    if matches.get_flag("list-guids") {
+        for g in efi_guids::EFI_WELL_KNOWN_GUIDS
+            .sort_by_guid()
+            .split_last()
+            .unwrap()
+            .1
+            .iter()
+        {
+            print!("{}", g);
+        }
+    }
     return std::process::ExitCode::from(0);
 }

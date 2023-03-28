@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use super::efi_guid::EfiGuid;
 use super::efi_variable_attribute::EfiVariableAttribute;
+use std::collections::HashSet;
 
 pub struct EfiVariable<'a> {
     pub attributes: HashSet<&'a EfiVariableAttribute>,

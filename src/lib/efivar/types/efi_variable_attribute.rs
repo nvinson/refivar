@@ -28,7 +28,11 @@ pub struct EfiVariableAttribute {
 
 impl fmt::Display for EfiVariableAttribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        return write!(f, "EfiVariableAttribute {{name: \"{}\", value: {:#016x}}}", self.name, self.value);
+        return write!(
+            f,
+            "EfiVariableAttribute {{name: \"{}\", value: {:#016x}}}",
+            self.name, self.value
+        );
     }
 }
 
@@ -48,7 +52,7 @@ impl From<&EfiVariableAttribute> for String {
 
 impl EfiVariableAttribute {
     pub(crate) const fn init(name: &'static str, value: u64) -> Self {
-        return Self {name, value};
+        return Self { name, value };
     }
 
     pub fn name(&self) -> &'static str {
