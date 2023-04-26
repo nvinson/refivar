@@ -1,5 +1,5 @@
 use clap;
-use efivar::{efi_guids, efi_variable_attributes, efivar_display};
+use efivar::efi_guids;
 use std::process::ExitCode;
 
 fn create_parser() -> clap::Command {
@@ -73,10 +73,18 @@ fn create_parser() -> clap::Command {
             .help("import variable from <file>")
             .action(clap::ArgAction::Set)
         )
+        .arg(clap::Arg::new("guids-list-path")
+            .short('g')
+            .long("guids-list-path")
+            .value_name("guids-list-path")
+            .default_value(efi_guids::DEFAULT_GUIDS_LIST_PATH)
+            .help(format!("specify path to GUIDs list file."))
+            .action(clap::ArgAction::Set)
+        )
         .arg(clap::Arg::new("list-guids")
             .short('L')
             .long("list-guids")
-            .help("show internal GUID list")
+            .help("show GUID list")
             .action(clap::ArgAction::SetTrue)
         )
         .arg(clap::Arg::new("write")
@@ -102,14 +110,18 @@ fn create_parser() -> clap::Command {
 fn main() -> ExitCode {
     let matches = create_parser().get_matches();
     if matches.get_flag("list-guids") {
-        for g in efi_guids::EFI_WELL_KNOWN_GUIDS
-            .sort_by_guid()
-            .split_last()
-            .unwrap()
-            .1
-            .iter()
-        {
-            print!("{}", g);
+        let mut guid_list: efi_guids::EfiGuidList = Default::default();
+        guid_list.load(matches.get_one("guids-list-path").unwrap());
+        for g in guid_list.guids(efi_guids::GuidListSortField::Guid) {
+            println!("{}", g);
+        }
+        println!("");
+        for g in guid_list.guids(efi_guids::GuidListSortField::Id) {
+            println!("{}", g);
+        }
+        println!("");
+        for g in guid_list.guids(efi_guids::GuidListSortField::None) {
+            println!("{}", g);
         }
     }
     return std::process::ExitCode::from(0);

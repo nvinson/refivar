@@ -1,0 +1,202 @@
+[
+    {
+        "guid": "0223eddb-9079-4388-af77-2d65b1c35d3b",
+        "name": "redhat",
+        "description": "Red Hat"
+    },
+    {
+        "guid": "093e0fae-a6c4-4f50-9f1b-d41e2b89c19a",
+        "name": "sha512",
+        "description": "SHA-512 hash"
+    },
+    {
+        "guid": "0abba7dc-e516-4167-bbf5-4d9d1c739416",
+        "name": "fwupdate",
+        "description": "Linux Firmware Update Tool"
+    },
+    {
+        "guid": "0b6e5233-a65c-44c9-9407-d9ab83bfc8bd",
+        "name": "sha224",
+        "description": "SHA-224 hash"
+    },
+    {
+        "guid": "126a762d-5758-4fca-8531-201a7f57f850",
+        "name": "lenovo_boot_menu",
+        "description": "Lenovo Boot Menu"
+    },
+    {
+        "guid": "26dc4851-195f-4ae1-9a19-fbf883bbb35e",
+        "name": "supermicro",
+        "description": "Super Micro"
+    },
+    {
+        "guid": "3b053091-6c9f-04cc-b1ac-e2a51e3be5f5",
+        "name": "asus",
+        "description": "Asus"
+    },
+    {
+        "guid": "3b8c8162-188c-46a4-aec9-be43f1d65697",
+        "name": "ux_capsule",
+        "description": "Firmware update localized text image"
+    },
+    {
+        "guid": "3bd2a492-96c0-4079-b420-fcf98ef103ed",
+        "name": "x509_sha256",
+        "description": "SHA-256 hash of X.509 Certificate"
+    },
+    {
+        "guid": "3c5766e8-269c-4e34-aa14-ed776e85b3b6",
+        "name": "rsa2048",
+        "description": "RSA 2048 pubkey"
+    },
+    {
+        "guid": "3cc24e96-22c7-41d8-8863-8e39dcdcc2cf",
+        "name": "lenovo",
+        "description": "Lenovo"
+    },
+    {
+        "guid": "3f7e615b-0d45-4f80-88dc-26b234958560",
+        "name": "lenovo_diag",
+        "description": "Lenovo Diagnostics"
+    },
+    {
+        "guid": "446dbf63-2502-4cda-bcfa-2465d2b0fe9d",
+        "name": "x509_sha512",
+        "description": "SHA-512 hash of X.509 Certificate"
+    },
+    {
+        "guid": "452e8ced-dfff-4b8c-ae01-5118862e682c",
+        "name": "external_management",
+        "description": "External Management Mechanism"
+    },
+    {
+        "guid": "4aafd29d-68df-49ee-8aa9-347d375665a7",
+        "name": "pkcs7_cert",
+        "description": "PKCS7 Certificate"
+    },
+    {
+        "guid": "55555555-5555-5555-5555-555555555555",
+        "name": "fives",
+        "description": "All Fives Test Data"
+    },
+    {
+        "guid": "605dab50-e046-4300-abb6-3dd810dd8b23",
+        "name": "shim",
+        "description": "shim"
+    },
+    {
+        "guid": "665d3f60-ad3e-4cad-8e26-db46eee9f1b5",
+        "name": "lenovo_rescue",
+        "description": "Lenovo Rescue and Recovery"
+    },
+    {
+        "guid": "67f8444f-8743-48f1-a328-1eaab8736080",
+        "name": "rsa2048_sha1",
+        "description": "RSA-2048 signature of a SHA-1 hash"
+    },
+    {
+        "guid": "6dc40ae4-2ee8-9c4c-a314-0fc7b2008710",
+        "name": "canonical",
+        "description": "Canonical"
+    },
+    {
+        "guid": "70564dce-9afc-4ee3-85fc-949649d7e45c",
+        "name": "dell",
+        "description": "Dell"
+    },
+    {
+        "guid": "7076876e-80c2-4ee6-aad2-28b349a6865b",
+        "name": "x509_sha384",
+        "description": "SHA-384 hash of X.509 Certificate"
+    },
+    {
+        "guid": "721c8b66-426c-4e86-8e99-3457c46ab0b9",
+        "name": "lenovo_setup",
+        "description": "Lenovo Firmware Setup"
+    },
+    {
+        "guid": "77fa9abd-0359-4d32-bd60-28f4e78f784b",
+        "name": "microsoft",
+        "description": "Microsoft"
+    },
+    {
+        "guid": "7facc7b6-127f-4e9c-9c5d-080f98994345",
+        "name": "lenovo_2",
+        "description": "Lenovo"
+    },
+    {
+        "guid": "8108ac4e-9f11-4d59-850e-e21a522c59b2",
+        "name": "auto_created_boot_option",
+        "description": "Automatically Created Boot Option"
+    },
+    {
+        "guid": "826ca512-cf10-4ac9-b187-be01496631bd",
+        "name": "sha1",
+        "description": "SHA-1"
+    },
+    {
+        "guid": "82988420-7467-4490-9059-feb448dd1963",
+        "name": "lenovo_me_config",
+        "description": "Lenovo ME Configuration Menu"
+    },
+    {
+        "guid": "8be4df61-93ca-11d2-aa0d-00e098032b8c",
+        "name": "global",
+        "description": "EFI Global Variable"
+    },
+    {
+        "guid": "91376aff-cba6-42be-949d-06fde81128e8",
+        "name": "grub",
+        "description": "GRUB"
+    },
+    {
+        "guid": "a5c059a1-94e4-4aa7-87b5-ab155c2bf072",
+        "name": "x509_cert",
+        "description": "X.509 Certificate"
+    },
+    {
+        "guid": "a7717414-c616-4977-9420-844712a735bf",
+        "name": "rsa2048_sha256_cert",
+        "description": "RSA-2048 key with SHA-256 Certificate"
+    },
+    {
+        "guid": "a7d8d9a6-6ab0-4aeb-ad9d-163e59a7a380",
+        "name": "lenovo_diag_splash",
+        "description": "Lenovo Diagnostic Splash Screen"
+    },
+    {
+        "guid": "bc7838d2-0f82-4d60-8316-c068ee79d25b",
+        "name": "lenovo_msg",
+        "description": "Lenovo Vendor Message Device"
+    },
+    {
+        "guid": "c1c41626-504c-4092-aca9-41f936934328",
+        "name": "sha256",
+        "description": "SHA-256"
+    },
+    {
+        "guid": "c57ad6b7-0515-40a8-9d21-551652854e37",
+        "name": "shell",
+        "description": "EFI Shell"
+    },
+    {
+        "guid": "d719b2cb-3d3a-4596-a3bc-dad00e67656f",
+        "name": "security",
+        "description": "EFI Security Database"
+    },
+    {
+        "guid": "e2b36190-879b-4a3d-ad8d-f2e7bba32784",
+        "name": "rsa2048_sha256",
+        "description": "RSA-2048 signature of a SHA-256 hash"
+    },
+    {
+        "guid": "f46ee6f4-4785-43a3-923d-7f786c3c8479",
+        "name": "lenovo_startup_interrupt",
+        "description": "Lenovo Startup Interrupt Menu"
+    },
+    {
+        "guid": "ff3e5307-9fd0-48c9-85f1-8ad56c701e01",
+        "name": "sha384",
+        "description": "SHA-384"
+    }
+]
