@@ -1,5 +1,4 @@
 use super::EfiGuidError;
-use crate::types::efi_guid_error;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt;
@@ -110,9 +109,9 @@ macro_rules! try_from_byte_slice {
                     Ok(o) => Ok(Self::from(o)),
                     Err(_) => {
                         if len < 16 {
-                            Err(efi_guid_error::SRC_SLICE_LENGTH_TOO_SHORT)
+                            Err(EfiGuidError::SliceLengthTooShort)
                         } else {
-                            Err(efi_guid_error::SRC_SLICE_LENGTH_TOO_LONG)
+                            Err(EfiGuidError::SliceLengthTooLong)
                         }
                     }
                 };
@@ -132,9 +131,9 @@ macro_rules! try_from_byte_vec {
                     Ok(a) => Ok(EfiGuid::from(&a)),
                     Err(_o) => {
                         if vec_len < 16 {
-                            Err(efi_guid_error::SRC_VEC_LENGTH_TOO_SHORT)
+                            Err(EfiGuidError::VecLengthTooShort)
                         } else {
-                            Err(efi_guid_error::SRC_VEC_LENGTH_TOO_LONG)
+                            Err(EfiGuidError::VecLengthTooLong)
                         }
                     }
                 }
@@ -163,7 +162,7 @@ impl FromStr for EfiGuid {
     fn from_str(value: &str) -> Result<Self, EfiGuidError> {
         let chars: Vec<char> = value.chars().into_iter().collect();
         if chars.len() != 36 {
-            return Err(efi_guid_error::BAD_FORMAT);
+            return Err(EfiGuidError::BadFormat);
         }
         let digits = chars
             .into_iter()
@@ -171,13 +170,13 @@ impl FromStr for EfiGuid {
             .filter_map(|(i, c)| {
                 if i == 8 || i == 13 || i == 18 || i == 23 {
                     if c != '-' {
-                        return Some(Err(efi_guid_error::BAD_FORMAT));
+                        return Some(Err(EfiGuidError::BadFormat));
                     }
                     return None;
                 }
                 return match c.to_digit(16) {
                     Some(d) => Some(Ok(d as u8)),
-                    None => Some(Err(efi_guid_error::BAD_FORMAT)),
+                    None => Some(Err(EfiGuidError::BadFormat)),
                 };
             })
             .collect::<Result<Vec<u8>, _>>()?;
@@ -201,7 +200,7 @@ impl FromStr for EfiGuid {
                 .collect::<Vec<u8>>(),
             ) {
                 Ok(o) => Ok(o),
-                Err(_) => Err(efi_guid_error::BAD_FORMAT),
+                Err(_) => Err(EfiGuidError::BadFormat),
             }
             .unwrap(),
         });

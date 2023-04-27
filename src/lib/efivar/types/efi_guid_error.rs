@@ -33,4 +33,4 @@ impl fmt::Display for EfiGuidError {
     }
 }
 
-impl Error for EfiGuidError {};
+impl Error for EfiGuidError {}
