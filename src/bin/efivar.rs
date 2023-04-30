@@ -111,17 +111,24 @@ fn main() -> ExitCode {
     let matches = create_parser().get_matches();
     if matches.get_flag("list-guids") {
         let mut guid_list: efi_guids::EfiGuidList = Default::default();
-        guid_list.load(matches.get_one("guids-list-path").unwrap());
-        for g in guid_list.guids(efi_guids::GuidListSortField::Guid) {
-            println!("{}", g);
-        }
-        println!("");
-        for g in guid_list.guids(efi_guids::GuidListSortField::Id) {
-            println!("{}", g);
-        }
-        println!("");
-        for g in guid_list.guids(efi_guids::GuidListSortField::None) {
-            println!("{}", g);
+        match guid_list.load(matches.get_one("guids-list-path").unwrap()) {
+            Ok(()) => {
+                for g in guid_list.guids(efi_guids::GuidListSortField::Guid) {
+                    println!("{}", g);
+                }
+                println!("");
+                for g in guid_list.guids(efi_guids::GuidListSortField::Id) {
+                    println!("{}", g);
+                }
+                println!("");
+                for g in guid_list.guids(efi_guids::GuidListSortField::None) {
+                    println!("{}", g);
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to read GUIDs list file: {}", e);
+                return std::process::ExitCode::from(1);
+            }
         }
     }
     return std::process::ExitCode::from(0);

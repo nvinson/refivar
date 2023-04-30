@@ -3,7 +3,7 @@ use crate::types::EfiGuidListEntry;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Error};
 use std::str::FromStr;
 
 pub const DEFAULT_GUIDS_LIST_PATH: &'static str = env!("GUIDS_LIST_PATH");
@@ -32,44 +32,31 @@ impl Default for EfiGuidList {
 }
 
 impl EfiGuidList {
-    pub fn load(&mut self, path: &String) -> () {
+    pub fn load(&mut self, path: &String) -> Result<(), Error> {
         let mut map: HashMap<String, EfiGuidListEntry> = HashMap::new();
-        match File::open(path) {
-            Ok(h) => {
-                let reader = BufReader::new(h);
-                let result: serde_json::Result<Vec<JsonEfiGuidListEntry>> =
-                    serde_json::from_reader(reader);
-                match result {
-                    Ok(v) => {
-                        for entry in v {
-                            match EfiGuid::from_str(&entry.guid) {
-                                Ok(g) => {
-                                    map.insert(
-                                        entry.name.clone(),
-                                        EfiGuidListEntry {
-                                            guid: g,
-                                            name: entry.name.clone(),
-                                            description: entry.description,
-                                        },
-                                    );
-                                }
-                                Err(_) => {
-                                    eprintln!(
-                                        "Entry with UUID: {} invalid. Skipping...",
-                                        entry.guid
-                                    );
-                                }
-                            };
+        let reader = BufReader::new(File::open(path)?);
+        let result: serde_json::Result<Vec<JsonEfiGuidListEntry>> = serde_json::from_reader(reader);
+        match result {
+            Ok(v) => {
+                for entry in v {
+                    match EfiGuid::from_str(&entry.guid) {
+                        Ok(g) => {
+                            map.insert(
+                                entry.name.clone(),
+                                EfiGuidListEntry {
+                                    guid: g,
+                                    name: entry.name.clone(),
+                                    description: entry.description,
+                                },
+                            );
                         }
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to read GUIDs list file: {}", e);
-                    }
+                        Err(_) => {
+                            eprintln!("Entry with UUID: {} invalid. Skipping...", entry.guid);
+                        }
+                    };
                 }
             }
-            Err(e) => {
-                eprintln!("Failed to open GUIDs list file: {}", e);
-            }
+            Err(e) => return Err(e.into()),
         }
         map.insert(
             "zero".to_string(),
@@ -81,6 +68,7 @@ impl EfiGuidList {
         );
 
         self.guids_map = Some(map);
+        Ok(())
     }
 
     pub fn guids(&self, sorted_by: GuidListSortField) -> Vec<&EfiGuidListEntry> {
