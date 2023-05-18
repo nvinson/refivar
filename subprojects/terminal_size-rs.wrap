@@ -1,0 +1,10 @@
+[wrap-file]
+directory = terminal_size-0.2.6
+
+source_url = https://crates.io/api/v1/crates/terminal_size/0.2.6/download
+source_filename = terminal_size-0.2.6.tar.gz
+source_hash = 8e6bf6f19e9f8ed8d4048dc22981458ebcf406d67e94cd422e5ecd73d63b3237
+patch_directory = terminal_size-0.2.6
+
+[provide]
+terminal_size-rs = terminal_size_rs_dep

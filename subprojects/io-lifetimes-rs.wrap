@@ -1,0 +1,10 @@
+[wrap-file]
+directory = io-lifetimes-1.0.10
+
+source_url = https://crates.io/api/v1/crates/io-lifetimes/1.0.10/download
+source_filename = io-lifetimes-1.0.10.tar.gz
+source_hash = 9c66c74d2ae7e79a5a8f7ac924adbe38ee42a859c6539ad869eb51f0b52dc220
+patch_directory = io-lifetimes-1.0.10
+
+[provide]
+io-lifetimes-rs = io_lifetimes_rs_dep

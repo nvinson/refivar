@@ -1,0 +1,10 @@
+[wrap-file]
+directory = rustix-0.37.19
+
+source_url = https://crates.io/api/v1/crates/rustix/0.37.19/download
+source_filename = rustix-0.37.19.tar.gz
+source_hash = acf8729d8542766f1b2cf77eb034d52f40d375bb8b615d0b147089946e16613d
+patch_directory = rustix-0.37.19
+
+[provide]
+rustix-rs = rustix_rs_dep

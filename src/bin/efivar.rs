@@ -3,12 +3,12 @@ use efivar::efi_guids;
 use std::process::ExitCode;
 
 fn create_parser() -> clap::Command {
-    return clap::command!()
+    return clap::Command::new("efivar")
         .args_override_self(true)
         .disable_help_flag(true)
         .disable_version_flag(true)
-        .max_term_width(90)
-        .term_width(90)
+        .max_term_width(80)
+        .term_width(80)
         .arg(clap::Arg::new("attributes")
             .short('A')
             .long("attributes")

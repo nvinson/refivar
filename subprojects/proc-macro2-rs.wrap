@@ -1,0 +1,10 @@
+[wrap-file]
+directory = proc-macro2-1.0.58
+
+source_url = https://crates.io/api/v1/crates/proc-macro2/1.0.58/download
+source_filename = proc-macro2-1.0.58.tar.gz
+source_hash = fa1fb82fc0c281dd9671101b66b771ebbe1eaf967b96ac8740dcba4b70005ca8
+patch_directory = proc-macro2-1.0.58
+
+[provide]
+proc-macro2-rs = proc_macro2_rs_dep

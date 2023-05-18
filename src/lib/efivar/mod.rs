@@ -2,6 +2,8 @@ pub mod efi_guids;
 pub mod efivar_display;
 pub mod types;
 
+mod efi_guids_list_path;
+
 pub mod efi_variable_attributes {
     use crate::types::EfiVariableAttribute;
 

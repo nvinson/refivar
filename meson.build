@@ -1,0 +1,95 @@
+project(
+  'refivar',
+  'rust',
+  version: '0.1',
+  meson_version: '>= 1.1.0',
+  default_options: [
+    'warning_level=3',
+    'rust_std=2021'
+  ]
+)
+
+fs = import('fs')
+
+rustc = meson.get_compiler('rust')
+if rustc.version().version_compare('<1.69')
+  error('rustc 1.69 required. Found ' + rustc.version())
+endif
+
+clap_rs_dep = dependency('clap-rs', version: '>=4.1.13')
+serde_rs_dep = dependency('serde-rs', version: '>=1.0.160')
+serde_json_rs_dep = dependency('serde_json-rs', version: '>=1.0.96')
+
+fqDataDir = get_option('prefix') / get_option('datadir') / 'refivar'
+
+lib_refivar_rs_sources = [
+]
+
+lib_refivar_guids_json = (
+  meson.project_source_root() / 'src' / 'lib' / 'efivar' / 'guids.json'
+)
+lib_refivar_guids_json_install_path = (
+  get_option('prefix') / get_option('datadir') / 'refivar' / fs.name(lib_refivar_guids_json)
+)
+
+lib_refivar_guids_list_path_rs_conf_data = configuration_data()
+lib_refivar_guids_list_path_rs_conf_data.set(
+  'GUIDS_LIST_PATH',
+  lib_refivar_guids_json_install_path
+)
+
+lib_refivar_efi_guids_list_path_rs = configure_file(
+  output: 'efi_guids_list_path.rs',
+  input: 'src/lib/efivar/efi_guids_list_path.rs.in',
+  configuration: lib_refivar_guids_list_path_rs_conf_data
+)
+
+install_data(
+  lib_refivar_guids_json,
+  install_dir : fs.parent(lib_refivar_guids_json_install_path)
+)
+
+lib_refivar = static_library(
+  'efivar',
+  structured_sources(
+    [
+      'src/lib/efivar/mod.rs',
+      'src/lib/efivar/efi_guids.rs',
+      'src/lib/efivar/efivar_display.rs',
+      lib_refivar_efi_guids_list_path_rs
+    ],
+    {
+      'types': [
+        'src/lib/efivar/types/efi_guid_error.rs',
+        'src/lib/efivar/types/efi_guid_list_entry.rs',
+        'src/lib/efivar/types/efi_guid.rs',
+        'src/lib/efivar/types/efi_variable_attribute.rs',
+        'src/lib/efivar/types/efi_variable.rs',
+        'src/lib/efivar/types/mod.rs'
+      ],
+    }
+  ),
+  rust_crate_type: 'lib',
+  dependencies: [
+    serde_json_rs_dep,
+    serde_rs_dep
+  ],
+  install: false,
+)
+
+# static_library('efivar', 'efivar.rs', rust_crate_type: 'staticlib',
+#                install : true)
+# shared_library('efivar', 'efivar.rs', rust_crate_type: 'cdylib',
+#                install : true)
+
+executable(
+  'efivar',
+  'src/bin/efivar.rs',
+  link_with: lib_refivar,
+  dependencies: [
+    clap_rs_dep,
+    serde_rs_dep,
+    serde_json_rs_dep
+  ],
+  install: true
+)

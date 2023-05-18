@@ -1,0 +1,10 @@
+[wrap-file]
+directory = ryu-1.0.13
+
+source_url = https://crates.io/api/v1/crates/ryu/1.0.13/download
+source_filename = ryu-1.0.13.tar.gz
+source_hash = f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041
+patch_directory = ryu-1.0.13
+
+[provide]
+ryu-rs = ryu_rs_dep

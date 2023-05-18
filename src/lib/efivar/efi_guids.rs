@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Error};
 use std::str::FromStr;
+use crate::efi_guids_list_path;
 
-pub const DEFAULT_GUIDS_LIST_PATH: &'static str = env!("GUIDS_LIST_PATH");
+pub const DEFAULT_GUIDS_LIST_PATH: &'static str = efi_guids_list_path::VALUE;
 
 pub enum GuidListSortField {
     Guid,
