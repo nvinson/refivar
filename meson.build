@@ -17,13 +17,11 @@ if rustc.version().version_compare('<1.69')
 endif
 
 clap_rs_dep = dependency('clap-rs', version: '>=4.1.13')
+ignore_result_rs_dep = dependency('ignore-result-rs', version: '>=0.2.0')
 serde_rs_dep = dependency('serde-rs', version: '>=1.0.160')
 serde_json_rs_dep = dependency('serde_json-rs', version: '>=1.0.96')
 
 fqDataDir = get_option('prefix') / get_option('datadir') / 'refivar'
-
-lib_refivar_rs_sources = [
-]
 
 lib_refivar_guids_json = (
   meson.project_source_root() / 'src' / 'lib' / 'efivar' / 'guids.json'
@@ -88,6 +86,7 @@ executable(
   link_with: lib_refivar,
   dependencies: [
     clap_rs_dep,
+    ignore_result_rs_dep,
     serde_rs_dep,
     serde_json_rs_dep
   ],

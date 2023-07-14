@@ -1,5 +1,7 @@
 use clap;
 use efivar::efi_guids;
+use ignore_result::Ignore;
+use std::io;
 use std::process::ExitCode;
 
 fn create_parser() -> clap::Command {
@@ -108,20 +110,13 @@ fn create_parser() -> clap::Command {
 }
 
 fn main() -> ExitCode {
-    let matches = create_parser().get_matches();
+    let mut parser = create_parser();
+    let matches = parser.get_matches_mut();
     if matches.get_flag("list-guids") {
         let mut guid_list: efi_guids::EfiGuidList = Default::default();
         match guid_list.load(matches.get_one("guids-list-path").unwrap()) {
             Ok(()) => {
                 for g in guid_list.guids(efi_guids::GuidListSortField::Guid) {
-                    println!("{}", g);
-                }
-                println!("");
-                for g in guid_list.guids(efi_guids::GuidListSortField::Id) {
-                    println!("{}", g);
-                }
-                println!("");
-                for g in guid_list.guids(efi_guids::GuidListSortField::None) {
                     println!("{}", g);
                 }
             }
@@ -130,6 +125,9 @@ fn main() -> ExitCode {
                 return std::process::ExitCode::from(1);
             }
         }
+    } else {
+        parser.write_help(&mut io::stderr()).ignore();
+        return std::process::ExitCode::from(1);
     }
     return std::process::ExitCode::from(0);
 }

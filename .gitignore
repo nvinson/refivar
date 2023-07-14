@@ -6,6 +6,7 @@ subprojects/bitflags-[0-9]*
 subprojects/clap-[0-9]*
 subprojects/clap_builder-[0-9]*
 subprojects/clap_lex-[0-9]*
+subprojects/ignore-result-[0-9]*
 subprojects/io-lifetimes-[0-9]*
 subprojects/itoa-[0-9]*
 subprojects/libc-[0-9]*
