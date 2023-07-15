@@ -1,4 +1,4 @@
 pub enum PrintMode {
     VERBOSE,
-    DECIMAL,
+    DECIMAL
 }
