@@ -57,6 +57,14 @@ lib_refivar = static_library(
       lib_refivar_efi_guids_list_path_rs
     ],
     {
+      'efivarfs': [
+        'src/lib/efivar/efivarfs/efi_variables.rs',
+        'src/lib/efivar/efivarfs/mod.rs',
+      ],
+      'efivar': [
+        'src/lib/efivar/efivar/efi_variables.rs',
+        'src/lib/efivar/efivar/mod.rs',
+      ],
       'print_mode': [
         'src/lib/efivar/print_mode/decimal.rs',
         'src/lib/efivar/print_mode/mod.rs',

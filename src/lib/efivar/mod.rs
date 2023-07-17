@@ -1,5 +1,7 @@
 pub mod efi_guids;
+pub mod efivar;
 pub mod efivar_display;
+pub mod efivarfs;
 pub mod print_mode;
 pub mod types;
 

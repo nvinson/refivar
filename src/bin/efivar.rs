@@ -110,6 +110,11 @@ fn create_parser() -> clap::Command {
 }
 
 fn list_variables(parser_args: clap::ArgMatches) -> ExitCode {
+    let mut efi_variables: efivar::efivarfs::EfiVariables = Default::default();
+
+    for v in efi_variables.list() {
+        println!("{}", v);
+    }
     return std::process::ExitCode::from(0);
 }
 
