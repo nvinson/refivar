@@ -1,3 +1,4 @@
+use crate::efi_guids_list_path;
 use crate::types::EfiGuid;
 use crate::types::EfiGuidListEntry;
 use serde::Deserialize;
@@ -5,7 +6,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Error};
 use std::str::FromStr;
-use crate::efi_guids_list_path;
 
 pub const DEFAULT_GUIDS_LIST_PATH: &'static str = efi_guids_list_path::VALUE;
 
@@ -28,7 +28,7 @@ struct JsonEfiGuidListEntry {
 
 impl Default for EfiGuidList {
     fn default() -> Self {
-        EfiGuidList { guids_map: None }
+        return EfiGuidList { guids_map: None };
     }
 }
 
