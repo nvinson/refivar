@@ -1,5 +1,5 @@
 use clap;
-use efivar::efi_guids;
+use efivar;
 use ignore_result::Ignore;
 use std::io;
 use std::process::ExitCode;
@@ -79,7 +79,7 @@ fn create_parser() -> clap::Command {
             .short('g')
             .long("guids-list-path")
             .value_name("guids-list-path")
-            .default_value(efi_guids::DEFAULT_GUIDS_LIST_PATH)
+            .default_value(efivar::efi_guids::DEFAULT_GUIDS_LIST_PATH)
             .help(format!("specify path to GUIDs list file."))
             .action(clap::ArgAction::Set)
         )
@@ -109,25 +109,67 @@ fn create_parser() -> clap::Command {
         );
 }
 
+fn list_variables(parser_args: clap::ArgMatches) -> ExitCode {
+    return std::process::ExitCode::from(0);
+}
+
+fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::PrintMode) -> ExitCode {
+    return std::process::ExitCode::from(0);
+}
+
+fn append_attributes(parser_args: clap::ArgMatches) -> ExitCode {
+    return std::process::ExitCode::from(0);
+}
+
+fn list_guids(parser_args: clap::ArgMatches) -> ExitCode {
+    let mut guid_list: efivar::efi_guids::EfiGuidList = Default::default();
+    match guid_list.load(parser_args.get_one("guids-list-path").unwrap()) {
+        Ok(()) => {
+            for g in guid_list.guids(efivar::efi_guids::GuidListSortField::Guid) {
+                println!("{}", g);
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to read GUIDs list file: {}", e);
+            return std::process::ExitCode::from(e.raw_os_error().unwrap_or(1) as u8);
+        }
+    }
+    return std::process::ExitCode::from(0);
+}
+
+fn write_variable(parser_args: clap::ArgMatches) -> ExitCode {
+    return std::process::ExitCode::from(0);
+}
+
+fn import_variable(parser_args: clap::ArgMatches) -> ExitCode {
+    return std::process::ExitCode::from(0);
+}
+
+fn export_variable(parser_args: clap::ArgMatches) -> ExitCode {
+    return std::process::ExitCode::from(0);
+}
+
 fn main() -> ExitCode {
     let mut parser = create_parser();
     let matches = parser.get_matches_mut();
-    if matches.get_flag("list-guids") {
-        let mut guid_list: efi_guids::EfiGuidList = Default::default();
-        match guid_list.load(matches.get_one("guids-list-path").unwrap()) {
-            Ok(()) => {
-                for g in guid_list.guids(efi_guids::GuidListSortField::Guid) {
-                    println!("{}", g);
-                }
-            }
-            Err(e) => {
-                eprintln!("Failed to read GUIDs list file: {}", e);
-                return std::process::ExitCode::from(1);
-            }
-        }
+    if matches.get_flag("list") {
+        return list_variables(matches);
+    } else if matches.get_flag("print") {
+        return print_variable(matches, efivar::types::PrintMode::VERBOSE);
+    } else if matches.get_flag("append") {
+        return append_attributes(matches);
+    } else if matches.get_flag("list-guids") {
+        return list_guids(matches);
+    } else if matches.get_flag("write") {
+        return write_variable(matches);
+    } else if matches.get_flag("print-decimal") {
+        return print_variable(matches, efivar::types::PrintMode::DECIMAL);
+    } else if matches.get_one::<&str>("import").is_some() {
+        return import_variable(matches);
+    } else if matches.get_one::<&str>("export").is_some() {
+        return export_variable(matches);
     } else {
         parser.write_help(&mut io::stderr()).ignore();
-        return std::process::ExitCode::from(1);
+        return std::process::ExitCode::from(22 /* EINVAL */);
     }
-    return std::process::ExitCode::from(0);
 }
