@@ -109,13 +109,32 @@ fn create_parser() -> clap::Command {
         );
 }
 
-fn list_variables(parser_args: clap::ArgMatches) -> ExitCode {
-    let mut efi_variables: efivar::efivarfs::EfiVariables = Default::default();
+fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
+    let mut efivar_fs_variables: efivar::efivarfs::EfiVariables = Default::default();
 
-    for v in efi_variables.list() {
-        println!("{}", v);
+    match efivar_fs_variables.list() {
+        Ok(variables) => {
+            for v in variables {
+                println!("{}", v);
+            }
+            return std::process::ExitCode::from(0);
+        },
+        Err(_) => {
+            let mut efivar_variables: efivar::efivar::EfiVariables = Default::default();
+            match efivar_variables.list() {
+                Ok(variables) => {
+                    for v in variables {
+                        println!("{}", v);
+                    }
+                    return std::process::ExitCode::from(0);
+                },
+                Err(e) => {
+                    eprintln!("Failed to access EFI variables: {}", e);
+                    return std::process::ExitCode::from(1);
+                }
+            }
+        }
     }
-    return std::process::ExitCode::from(0);
 }
 
 fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::PrintMode) -> ExitCode {
@@ -175,6 +194,6 @@ fn main() -> ExitCode {
         return export_variable(matches);
     } else {
         parser.write_help(&mut io::stderr()).ignore();
-        return std::process::ExitCode::from(22 /* EINVAL */);
+        return std::process::ExitCode::from(1);
     }
 }

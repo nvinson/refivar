@@ -1,6 +1,7 @@
 use crate::types::EfiGuid;
 use std::fs::{self, ReadDir};
 use std::path::PathBuf;
+use std::io;
 
 const EFIVARFS_PATH: &'static str = "/sys/firmware/efi/efivars";
 
@@ -82,18 +83,25 @@ impl EfiVariables {
         return self;
     }
 
-    pub fn list(&mut self) -> EfiVariablesNameIter {
-        if self.path.is_dir() {
-            let iter = fs::read_dir(&self.path);
-            return EfiVariablesNameIter {
-                dir_entry_iter: match iter {
-                    Ok(i) => Some(i),
-                    Err(_) => None,
-                },
-            };
-        }
-        return EfiVariablesNameIter {
-            dir_entry_iter: None,
+    pub fn list(&mut self) -> io::Result<EfiVariablesNameIter> {
+        return match fs::metadata(self.path.as_path()) {
+            Ok(m) => {
+                if m.is_dir() {
+                    let iter = fs::read_dir(&self.path);
+                    return Ok(EfiVariablesNameIter {
+                        dir_entry_iter: match iter {
+                            Ok(i) => Some(i),
+                            Err(_) => None,
+                        },
+                    });
+                }
+                /*
+                 * Should return NotADirectory, but Rust doesn't support that, so return NotFound
+                 * instead.
+                 */
+                return Err(io::ErrorKind::NotFound.into());
+            },
+            Err(e) => Err(e),
         };
     }
 }

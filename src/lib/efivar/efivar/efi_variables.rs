@@ -1,4 +1,5 @@
 use crate::efivarfs;
+use std::io;
 use std::path::PathBuf;
 
 const EFIVARS_PATH: &'static str = "/sys/firmware/efi/vars";
@@ -21,7 +22,7 @@ impl EfiVariables {
         return self;
     }
 
-    pub fn list(&self) -> efivarfs::EfiVariablesNameIter {
+    pub fn list(&self) -> io::Result<efivarfs::EfiVariablesNameIter> {
         let mut e: efivarfs::EfiVariables = Default::default();
         e.set_path(self.path.clone());
         return e.list();
