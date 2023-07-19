@@ -1,4 +1,4 @@
-use super::EfiGuidError;
+use crate::types::EfiGuidError;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt;

@@ -1,3 +1,5 @@
+use crate::efivar::print_mode::{Decimal, Verbose};
+use crate::efivar::types::PrintMode;
 use clap;
 use efivar;
 use ignore_result::Ignore;
@@ -118,16 +120,16 @@ fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
                 println!("{}", v);
             }
             return std::process::ExitCode::from(0);
-        },
+        }
         Err(_) => {
-            let mut efivar_variables: efivar::efivar::EfiVariables = Default::default();
+            let efivar_variables: efivar::efivar::EfiVariables = Default::default();
             match efivar_variables.list() {
                 Ok(variables) => {
                     for v in variables {
                         println!("{}", v);
                     }
                     return std::process::ExitCode::from(0);
-                },
+                }
                 Err(e) => {
                     eprintln!("Failed to access EFI variables: {}", e);
                     return std::process::ExitCode::from(1);
@@ -138,7 +140,40 @@ fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
 }
 
 fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::PrintMode) -> ExitCode {
-    return std::process::ExitCode::from(0);
+    match parser_args.get_one::<String>("name") {
+        Some(name) => {
+            let efivar_fs_variables: efivar::efivarfs::EfiVariables = Default::default();
+            match efivar_fs_variables.get_variable(name) {
+                Ok(var) => {
+                    match print_mode {
+                        PrintMode::VERBOSE => println!("{}", Verbose(&var)),
+                        PrintMode::DECIMAL => println!("{}", Decimal(&var)),
+                    }
+                    return std::process::ExitCode::from(0);
+                }
+                Err(_) => {
+                    let efivar_variables: efivar::efivar::EfiVariables = Default::default();
+                    match efivar_variables.get_variable(name) {
+                        Ok(var) => {
+                            match print_mode {
+                                PrintMode::VERBOSE => println!("{}", Verbose(&var)),
+                                PrintMode::DECIMAL => println!("{}", Decimal(&var)),
+                            }
+                            return std::process::ExitCode::from(0);
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to read variable: {}", e);
+                            return std::process::ExitCode::from(1);
+                        }
+                    }
+                }
+            };
+        }
+        None => {
+            eprintln!("No variable name given");
+            return std::process::ExitCode::from(1);
+        }
+    };
 }
 
 fn append_attributes(parser_args: clap::ArgMatches) -> ExitCode {
@@ -193,7 +228,11 @@ fn main() -> ExitCode {
     } else if matches.get_one::<&str>("export").is_some() {
         return export_variable(matches);
     } else {
-        parser.write_help(&mut io::stderr()).ignore();
-        return std::process::ExitCode::from(1);
+        if matches.get_one::<String>("name").is_some() {
+            return print_variable(matches, efivar::types::PrintMode::VERBOSE);
+        } else {
+            parser.write_help(&mut io::stderr()).ignore();
+            return std::process::ExitCode::from(1);
+        }
     }
 }

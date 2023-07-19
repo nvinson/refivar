@@ -1,7 +1,8 @@
-use crate::types::EfiGuid;
+use crate::types::{EfiGuid, EfiVariable};
+use crate::efi_variable_attributes::parse_attributes;
 use std::fs::{self, ReadDir};
-use std::path::PathBuf;
 use std::io;
+use std::path::PathBuf;
 
 const EFIVARFS_PATH: &'static str = "/sys/firmware/efi/efivars";
 
@@ -30,15 +31,14 @@ fn convert_name(name: Option<&str>) -> Result<String, String> {
                 ));
             }
             let guid_bytes = &n[n.len() - MIN_VAR_FILE_NAME_LEN + 2..n.len()];
-            let guid: Option<EfiGuid> = match guid_bytes.try_into() {
-                Ok(g) => Some(g),
-                Err(_) => None,
+            match EfiGuid::try_from(guid_bytes) {
+                Ok(_) => (),
+                Err(_) => {
+                    return Err(format!(
+                        "file name {n} does not represent an EFI variable name"
+                    ))
+                }
             };
-            if guid.is_none() {
-                return Err(format!(
-                    "file name {n} does not represent an EFI variable name"
-                ));
-            }
             let suffix = &n[0..n.len() - MIN_VAR_FILE_NAME_LEN + 1];
 
             return Ok(String::new() + guid_bytes + &"-" + suffix);
@@ -100,8 +100,39 @@ impl EfiVariables {
                  * instead.
                  */
                 return Err(io::ErrorKind::NotFound.into());
-            },
+            }
             Err(e) => Err(e),
         };
+    }
+
+    pub fn get_variable(&self, name: &str) -> io::Result<EfiVariable> {
+        if name.len() < MIN_VAR_FILE_NAME_LEN
+            || name.bytes().nth(MIN_VAR_FILE_NAME_LEN - 2).unwrap() != b'-'
+        {
+            return Err(io::ErrorKind::InvalidInput.into());
+        }
+        let guid_bytes = &name[0..MIN_VAR_FILE_NAME_LEN - 2];
+        let guid = match EfiGuid::try_from(guid_bytes) {
+            Ok(g) => Some(g),
+            Err(_) => {
+                return Err(io::ErrorKind::InvalidInput.into());
+            }
+        }.unwrap();
+        let prefix = &name[MIN_VAR_FILE_NAME_LEN - 1..];
+        let full_path = self.path.join(String::new() + prefix + &"-" + guid_bytes);
+        let bytes: Vec<u8> = match fs::read(full_path) {
+            Ok(bytes) => bytes,
+            Err(e) => return Err(e),
+        };
+        if bytes.len() < 4 {
+            return Err(io::ErrorKind::InvalidData.into());
+        }
+        let attrs = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
+        return Ok(EfiVariable {
+            name: name[MIN_VAR_FILE_NAME_LEN - 1..].into(),
+            attributes: parse_attributes(attrs).into(),
+            data: bytes[4..].to_vec(),
+            guid,
+        });
     }
 }

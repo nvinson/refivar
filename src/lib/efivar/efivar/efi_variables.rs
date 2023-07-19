@@ -1,4 +1,5 @@
 use crate::efivarfs;
+use crate::types::EfiVariable;
 use std::io;
 use std::path::PathBuf;
 
@@ -26,5 +27,9 @@ impl EfiVariables {
         let mut e: efivarfs::EfiVariables = Default::default();
         e.set_path(self.path.clone());
         return e.list();
+    }
+
+    pub fn get_variable(&self, name: &str) -> io::Result<EfiVariable> {
+        return Err(io::ErrorKind::Other.into());
     }
 }

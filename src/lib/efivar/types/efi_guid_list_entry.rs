@@ -1,4 +1,4 @@
-use super::efi_guid::EfiGuid;
+use crate::types::efi_guid::EfiGuid;
 use std::fmt;
 
 #[derive(PartialEq)]

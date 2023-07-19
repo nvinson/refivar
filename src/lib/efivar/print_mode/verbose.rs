@@ -24,7 +24,7 @@ impl fmt::Display for Verbose<'_> {
             for j in i..i + 16 {
                 match line_iter.next() {
                     Some(c) => {
-                        if (0x20 < *c) && (*c < 0x7e) {
+                        if (0x1f < *c) && (*c < 0x7f) {
                             decode[j - i] = u32::from(*c) as u8;
                         } else {
                             decode[j - i] = u32::from('.') as u8;
@@ -43,7 +43,7 @@ impl fmt::Display for Verbose<'_> {
             }
             f.write_str(&format!("  |{}|\n", std::str::from_utf8(&decode).unwrap()))?;
         }
-        f.write_str(&format!("{:08x}\n", self.0.data.len()))?;
+        f.write_str(&format!("{:08x}", self.0.data.len()))?;
         return Ok(());
     }
 }
