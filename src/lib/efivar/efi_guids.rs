@@ -5,7 +5,6 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Error};
-use std::str::FromStr;
 
 pub const DEFAULT_GUIDS_LIST_PATH: &'static str = efi_guids_list_path::VALUE;
 
@@ -40,7 +39,7 @@ impl EfiGuidList {
         match result {
             Ok(v) => {
                 for entry in v {
-                    match EfiGuid::from_str(&entry.guid) {
+                    match entry.guid.parse::<EfiGuid>() {
                         Ok(g) => {
                             map.insert(
                                 entry.name.clone(),

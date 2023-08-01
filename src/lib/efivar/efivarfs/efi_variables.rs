@@ -3,11 +3,9 @@ use crate::efi_variable_attributes::parse_attributes;
 use std::fs::{self, ReadDir};
 use std::io;
 use std::path::PathBuf;
+use crate::MIN_VAR_FILE_NAME_LEN;
 
 const EFIVARFS_PATH: &'static str = "/sys/firmware/efi/efivars";
-
-// variable file names have 1 or more characters, a dash, then a UUID (36 characters)
-const MIN_VAR_FILE_NAME_LEN: usize = 38;
 
 pub struct EfiVariables {
     path: PathBuf,

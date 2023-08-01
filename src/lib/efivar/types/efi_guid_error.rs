@@ -12,7 +12,7 @@ pub enum EfiGuidError {
 
 impl fmt::Display for EfiGuidError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
+        return match self {
             Self::BadFormat => write!(
                 f,
                 "bad format. Correct format is xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -29,7 +29,7 @@ impl fmt::Display for EfiGuidError {
             Self::VecLengthTooShort => {
                 write!(f, "source vector too short. Vector must have a size of 16")
             }
-        }
+        };
     }
 }
 
