@@ -214,3 +214,24 @@ impl TryFrom<&str> for EfiGuid {
         return value.parse::<Self>();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_str() {
+        assert_eq!(
+            EfiGuid {
+                a: 0x78563412,
+                b: 0xbc9a,
+                c: 0xf0de,
+                d: [0x01u8, 0x23u8, 0x45u8, 0x67u8, 0x89u8, 0xabu8, 0xcdu8, 0xefu8]
+            },
+            EfiGuid::from(&[
+                0x12u8, 0x34u8, 0x56u8, 0x78u8, 0x9au8, 0xbcu8, 0xdeu8, 0xf0u8, 0x01u8, 0x23u8,
+                0x45u8, 0x67u8, 0x89u8, 0xabu8, 0xcdu8, 0xefu8
+            ])
+        )
+    }
+}

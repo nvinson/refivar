@@ -10,6 +10,7 @@ project(
 )
 
 fs = import('fs')
+rust = import('rust')
 
 rustc = meson.get_compiler('rust')
 if rustc.version().version_compare('<1.69')
@@ -106,3 +107,5 @@ executable(
   ],
   install: true
 )
+
+rust.test('unit tests', lib_refivar)
