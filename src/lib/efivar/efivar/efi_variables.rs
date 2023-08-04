@@ -141,7 +141,7 @@ impl EfiVariables {
             .join(String::new() + prefix + &"-" + guid_bytes)
             .join("raw_var");
         let efi_variable = self.parse_payload(&full_path)?;
-        if *efi_variable.name != *name {
+        if *efi_variable.name != *prefix {
             return Err::<EfiVariable, Box<dyn Error>>("Corrupt variable. Reported name does not match name".into());
         }
         if efi_variable.guid != guid {
@@ -216,7 +216,13 @@ impl EfiVariables {
     fn get_firmware_platform_size(path: &str) -> Result<usize, Box<dyn Error>> {
         let result = match fs::read(path) {
             Ok(bytes) => match String::from_utf8(bytes) {
-                Ok(chars) => return Ok(usize::from_str_radix(&chars, 10)?),
+                Ok(chars) => {
+                    let ws_index = match chars.find(char::is_whitespace) {
+                        Some(index) => index,
+                        None => chars.len()
+                    };
+                    Ok(usize::from_str_radix(&chars[0..ws_index], 10)?)
+                }
                 Err(e) => Err(e.into()),
             },
             Err(e) => Err(e.into()),
