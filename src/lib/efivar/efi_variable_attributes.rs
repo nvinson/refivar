@@ -33,6 +33,6 @@ pub fn parse_attributes<'a>(value: u32) -> HashSet<&'a EfiVariableAttribute> {
         if u32::from(*attr) & value != 0 {
             set.insert(*attr);
         }
-    };
+    }
     return set;
 }

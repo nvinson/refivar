@@ -1,5 +1,5 @@
-use crate::efivarfs;
 use crate::efi_variable_attributes::parse_attributes;
+use crate::efivarfs;
 use crate::types::{EfiGuid, EfiVariable};
 use crate::MIN_VAR_FILE_NAME_LEN;
 use std::boxed::Box;
@@ -24,9 +24,12 @@ impl Default for EfiVariables {
             path: EFIVARS_PATH.into(),
             platform_size: 0,
         };
-        variables.set_firmware_platform_size(
-            EfiVariables::get_firmware_platform_size(EFIVARS_FW_PLATFORM_SZ_PATH.into()).unwrap(),
-        );
+        variables
+            .set_firmware_platform_size(
+                EfiVariables::get_firmware_platform_size(EFIVARS_FW_PLATFORM_SZ_PATH.into())
+                    .unwrap(),
+            )
+            .unwrap();
         return variables;
     }
 }
@@ -142,16 +145,20 @@ impl EfiVariables {
             .join("raw_var");
         let efi_variable = self.parse_payload(&full_path)?;
         if *efi_variable.name != *prefix {
-            return Err::<EfiVariable, Box<dyn Error>>("Corrupt variable. Reported name does not match name".into());
+            return Err::<EfiVariable, Box<dyn Error>>(
+                "Corrupt variable. Reported name does not match name".into(),
+            );
         }
         if efi_variable.guid != guid {
-            return Err::<EfiVariable, Box<dyn Error>>("Corrupt variable. Reported guid does not match guid".into());
+            return Err::<EfiVariable, Box<dyn Error>>(
+                "Corrupt variable. Reported guid does not match guid".into(),
+            );
         }
         return Ok(efi_variable);
     }
 
     fn parse_payload(&self, var_path: &Path) -> Result<EfiVariable, Box<dyn Error>> {
-        let mut handle = fs::File::open(var_path)?;
+        let handle = fs::File::open(var_path)?;
         let mut buffer: Box<dyn EfiNVariableBuffer> = match self.platform_size {
             64 => {
                 Ok(Box::new(Efi64VariableBuffer::try_from(handle)?) as Box<dyn EfiNVariableBuffer>)
@@ -173,7 +180,8 @@ impl EfiVariables {
                     return None;
                 })
                 .collect::<Vec<u16>>(),
-        )?.into();
+        )?
+        .into();
         let guid = EfiGuid::try_from(buffer.guid() as &[u8])?;
         let data_size: usize = match TryInto::<[u8; 8]>::try_into(buffer.data_size()) {
             Ok(v) => Ok::<usize, Box<dyn Error>>(usize::from_ne_bytes(v)),
@@ -182,7 +190,9 @@ impl EfiVariables {
             )?) as usize),
         }?;
         if data_size > 1024 {
-            return Err::<EfiVariable, Box<dyn Error>>("Corrupt variable. Reported data size exceeds maximum".into());
+            return Err::<EfiVariable, Box<dyn Error>>(
+                "Corrupt variable. Reported data size exceeds maximum".into(),
+            );
         }
         let data: Vec<u8> = buffer.data()[0..data_size].into();
         let status: usize = match TryInto::<[u8; 8]>::try_into(buffer.status()) {
@@ -192,9 +202,13 @@ impl EfiVariables {
             )?) as usize),
         }?;
         if status != 0 {
-            return Err::<EfiVariable, Box<dyn Error>>(format!("Variable read error. Unexpected status code {}", status).into());
+            return Err::<EfiVariable, Box<dyn Error>>(
+                format!("Variable read error. Unexpected status code {}", status).into(),
+            );
         }
-        let attributes = parse_attributes(u32::from_ne_bytes(TryInto::<[u8; 4]>::try_into(buffer.attributes())?));
+        let attributes = parse_attributes(u32::from_ne_bytes(TryInto::<[u8; 4]>::try_into(
+            buffer.attributes(),
+        )?));
 
         return Ok(EfiVariable {
             name,
@@ -205,12 +219,17 @@ impl EfiVariables {
     }
 
     fn set_firmware_platform_size(&mut self, size: usize) -> Result<(), Box<dyn Error>> {
-        match size {
-            64 => Ok(self.platform_size = 64),
-            32 => Ok(self.platform_size = 32),
-            _ => Err(format!("Unsupported platform size: {}", size)),
+        return match size {
+            64 => {
+                self.platform_size = 64;
+                Ok(())
+            }
+            32 => {
+                self.platform_size = 32;
+                Ok(())
+            }
+            _ => Err(format!("Unsupported platform size: {}", size).into()),
         };
-        return Ok(());
     }
 
     fn get_firmware_platform_size(path: &str) -> Result<usize, Box<dyn Error>> {
@@ -219,7 +238,7 @@ impl EfiVariables {
                 Ok(chars) => {
                     let ws_index = match chars.find(char::is_whitespace) {
                         Some(index) => index,
-                        None => chars.len()
+                        None => chars.len(),
                     };
                     Ok(usize::from_str_radix(&chars[0..ws_index], 10)?)
                 }

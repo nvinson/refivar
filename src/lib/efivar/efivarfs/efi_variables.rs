@@ -1,9 +1,9 @@
-use crate::types::{EfiGuid, EfiVariable};
 use crate::efi_variable_attributes::parse_attributes;
+use crate::types::{EfiGuid, EfiVariable};
+use crate::MIN_VAR_FILE_NAME_LEN;
 use std::fs::{self, ReadDir};
 use std::io;
 use std::path::PathBuf;
-use crate::MIN_VAR_FILE_NAME_LEN;
 
 const EFIVARFS_PATH: &'static str = "/sys/firmware/efi/efivars";
 
@@ -115,7 +115,8 @@ impl EfiVariables {
             Err(_) => {
                 return Err(io::ErrorKind::InvalidInput.into());
             }
-        }.unwrap();
+        }
+        .unwrap();
         let prefix = &name[MIN_VAR_FILE_NAME_LEN - 1..];
         let full_path = self.path.join(String::new() + prefix + &"-" + guid_bytes);
         let bytes: Vec<u8> = match fs::read(full_path) {
