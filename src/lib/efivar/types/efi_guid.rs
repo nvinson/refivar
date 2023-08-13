@@ -93,7 +93,6 @@ macro_rules! from_byte_array {
 macro_rules! from_byte_arrays {
     ($type:ty) => {
         from_byte_array!(&[$type; 16]);
-        from_byte_array!(&mut [$type; 16]);
     };
 }
 
@@ -220,18 +219,134 @@ mod tests {
     use super::*;
 
     #[test]
-    fn from_str() {
+    fn from_u8_array() {
+        let array: [u8; 16] = [
+            0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab,
+            0xcd, 0xef,
+        ];
         assert_eq!(
             EfiGuid {
                 a: 0x78563412,
                 b: 0xbc9a,
                 c: 0xf0de,
-                d: [0x01u8, 0x23u8, 0x45u8, 0x67u8, 0x89u8, 0xabu8, 0xcdu8, 0xefu8]
+                d: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]
             },
-            EfiGuid::from(&[
-                0x12u8, 0x34u8, 0x56u8, 0x78u8, 0x9au8, 0xbcu8, 0xdeu8, 0xf0u8, 0x01u8, 0x23u8,
-                0x45u8, 0x67u8, 0x89u8, 0xabu8, 0xcdu8, 0xefu8
-            ])
+            EfiGuid::from(&array)
         )
+    }
+
+    #[test]
+    fn from_i8_array() {
+        let array: [i8; 16] = [
+            0x12, 0x34, 0x56, 0x78, -0x66, -0x44, -0x22, -0x10, 0x01, 0x23, 0x45, 0x67, -0x77,
+            -0x55, -0x33, -0x11,
+        ];
+        assert_eq!(
+            EfiGuid {
+                a: 0x78563412,
+                b: 0xbc9a,
+                c: 0xf0de,
+                d: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]
+            },
+            EfiGuid::from(&array)
+        )
+    }
+
+    #[test]
+    fn from_u8_slice() {
+        let array: &[u8] = &[
+            0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab,
+            0xcd, 0xef,
+        ];
+        assert_eq!(
+            EfiGuid {
+                a: 0x78563412,
+                b: 0xbc9a,
+                c: 0xf0de,
+                d: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]
+            },
+            EfiGuid::try_from(array).unwrap()
+        )
+    }
+
+    #[test]
+    fn from_i8_slice() {
+        let array: &[i8] = &[
+            0x12, 0x34, 0x56, 0x78, -0x66, -0x44, -0x22, -0x10, 0x01, 0x23, 0x45, 0x67, -0x77,
+            -0x55, -0x33, -0x11,
+        ];
+        assert_eq!(
+            EfiGuid {
+                a: 0x78563412,
+                b: 0xbc9a,
+                c: 0xf0de,
+                d: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]
+            },
+            EfiGuid::try_from(array).unwrap()
+        )
+    }
+
+    #[test]
+    fn from_u8_vec() {
+        let array: Vec<u8> = Vec::from([
+            0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab,
+            0xcd, 0xef,
+        ]);
+        assert_eq!(
+            EfiGuid {
+                a: 0x78563412,
+                b: 0xbc9a,
+                c: 0xf0de,
+                d: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]
+            },
+            EfiGuid::try_from(array).unwrap()
+        )
+    }
+
+    #[test]
+    fn from_i8_vec() {
+        let array: Vec<i8> = Vec::from([
+            0x12, 0x34, 0x56, 0x78, -0x66, -0x44, -0x22, -0x10, 0x01, 0x23, 0x45, 0x67, -0x77,
+            -0x55, -0x33, -0x11,
+        ]);
+        assert_eq!(
+            EfiGuid {
+                a: 0x78563412,
+                b: 0xbc9a,
+                c: 0xf0de,
+                d: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]
+            },
+            EfiGuid::try_from(array).unwrap()
+        )
+    }
+
+    #[test]
+    fn from_str() {
+        let guid = "12345678-9abc-def0-1234-56789abcdef0";
+        assert_eq!(
+            EfiGuid {
+                a: 0x12345678,
+                b: 0x9abc,
+                c: 0xdef0,
+                d: [0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]
+            },
+            guid.parse::<EfiGuid>().unwrap()
+        );
+    }
+
+    #[test]
+    fn format() {
+        assert_eq!(
+            "12345678-9abc-def0-1234-56789abcdef0",
+            format!(
+                "{}",
+                EfiGuid {
+                    a: 0x12345678,
+                    b: 0x9abc,
+                    c: 0xdef0,
+                    d: [0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]
+                }
+            )
+        );
     }
 }

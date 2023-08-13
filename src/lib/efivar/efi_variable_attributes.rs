@@ -1,20 +1,20 @@
 use crate::types::EfiVariableAttribute;
 use std::collections::HashSet;
 
-pub static NON_VOLATILE: EfiVariableAttribute = EfiVariableAttribute::init("Non-Volatile", 0x1);
+pub static NON_VOLATILE: EfiVariableAttribute = EfiVariableAttribute::new("Non-Volatile", 0x1);
 pub static BOOTSERVICE_ACCESS: EfiVariableAttribute =
-    EfiVariableAttribute::init("Boot Service Access", 0x2);
+    EfiVariableAttribute::new("Boot Service Access", 0x2);
 pub static RUNTIME_ACCESS: EfiVariableAttribute =
-    EfiVariableAttribute::init("Runtime Service Access", 0x4);
+    EfiVariableAttribute::new("Runtime Service Access", 0x4);
 pub static HARDWARE_ERROR_RECORD: EfiVariableAttribute =
-    EfiVariableAttribute::init("Hardware Error Record", 0x8);
+    EfiVariableAttribute::new("Hardware Error Record", 0x8);
 pub static AUTHENTICATED_WRITE_ACCESS: EfiVariableAttribute =
-    EfiVariableAttribute::init("Authenticated Write Access", 0x10);
+    EfiVariableAttribute::new("Authenticated Write Access", 0x10);
 pub static TIME_BASED_AUTHENTICATED_WRITE_ACCESS: EfiVariableAttribute =
-    EfiVariableAttribute::init("Time-Based Authenticated Write Access", 0x20);
-pub static APPEND_WRITE: EfiVariableAttribute = EfiVariableAttribute::init("Append Write", 0x40);
+    EfiVariableAttribute::new("Time-Based Authenticated Write Access", 0x20);
+pub static APPEND_WRITE: EfiVariableAttribute = EfiVariableAttribute::new("Append Write", 0x40);
 pub static ENHANCED_AUTHENTICATED_ACCESS: EfiVariableAttribute =
-    EfiVariableAttribute::init("Enhanced Authenticated Access", 0x80);
+    EfiVariableAttribute::new("Enhanced Authenticated Access", 0x80);
 
 pub static EFI_VARIABLE_ATTRIBUTES: &'static [&EfiVariableAttribute] = &[
     &NON_VOLATILE,

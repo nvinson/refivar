@@ -112,7 +112,8 @@ fn create_parser() -> clap::Command {
 }
 
 fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
-    let mut efivar_fs_variables: efivar::efivarfs::EfiVariables = Default::default();
+    let mut efivar_fs_variables: efivar::efivarfs::EfiVariables =
+        efivar::efivarfs::EfiVariables::new();
 
     match efivar_fs_variables.list() {
         Ok(variables) => {
@@ -122,7 +123,8 @@ fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
             return std::process::ExitCode::from(0);
         }
         Err(_) => {
-            let efivar_variables: efivar::efivar::EfiVariables = Default::default();
+            let efivar_variables: efivar::efivar::EfiVariables =
+                efivar::efivar::EfiVariables::new();
             match efivar_variables.list() {
                 Ok(variables) => {
                     for v in variables {
@@ -142,7 +144,8 @@ fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
 fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::PrintMode) -> ExitCode {
     match parser_args.get_one::<String>("name") {
         Some(name) => {
-            let efivar_fs_variables: efivar::efivarfs::EfiVariables = Default::default();
+            let efivar_fs_variables: efivar::efivarfs::EfiVariables =
+                efivar::efivarfs::EfiVariables::new();
             match efivar_fs_variables.get_variable(name) {
                 Ok(var) => {
                     match print_mode {
@@ -152,7 +155,8 @@ fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::Prin
                     return std::process::ExitCode::from(0);
                 }
                 Err(_) => {
-                    let efivar_variables: efivar::efivar::EfiVariables = Default::default();
+                    let efivar_variables: efivar::efivar::EfiVariables =
+                        efivar::efivar::EfiVariables::new();
                     match efivar_variables.get_variable(name) {
                         Ok(var) => {
                             match print_mode {

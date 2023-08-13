@@ -2,7 +2,7 @@ project(
   'refivar',
   'rust',
   version: '0.1',
-  meson_version: '>= 1.1.0',
+  meson_version: '>= 1.2.0',
   default_options: [
     'warning_level=3',
     'rust_std=2021'
@@ -13,14 +13,15 @@ fs = import('fs')
 rust = import('rust')
 
 rustc = meson.get_compiler('rust')
-if rustc.version().version_compare('<1.69')
-  error('rustc 1.69 required. Found ' + rustc.version())
+if rustc.version().version_compare('<1.70')
+  error('rustc 1.70 required. Found ' + rustc.version())
 endif
 
 clap_rs_dep = dependency('clap-rs', version: '>=4.1.13')
 ignore_result_rs_dep = dependency('ignore-result-rs', version: '>=0.2.0')
-serde_rs_dep = dependency('serde-rs', version: '>=1.0.160')
+indoc_rs_dep = dependency('indoc-rs', version: '>=2.0.3')
 serde_json_rs_dep = dependency('serde_json-rs', version: '>=1.0.96')
+serde_rs_dep = dependency('serde-rs', version: '>=1.0.160')
 
 fqDataDir = get_option('prefix') / get_option('datadir') / 'refivar'
 
@@ -84,8 +85,9 @@ lib_refivar = static_library(
   ),
   rust_crate_type: 'lib',
   dependencies: [
+    indoc_rs_dep,
     serde_json_rs_dep,
-    serde_rs_dep
+    serde_rs_dep,
   ],
   install: false,
 )
@@ -102,10 +104,10 @@ executable(
   dependencies: [
     clap_rs_dep,
     ignore_result_rs_dep,
+    serde_json_rs_dep,
     serde_rs_dep,
-    serde_json_rs_dep
   ],
   install: true
 )
 
-rust.test('unit tests', lib_refivar)
+rust.test('unit tests', lib_refivar, rust_args:[])

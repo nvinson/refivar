@@ -67,15 +67,13 @@ impl Iterator for EfiVariablesNameIter {
     }
 }
 
-impl Default for EfiVariables {
-    fn default() -> Self {
+impl EfiVariables {
+    pub fn new() -> Self {
         return EfiVariables {
             path: EFIVARFS_PATH.into(),
         };
     }
-}
 
-impl EfiVariables {
     pub fn set_path(&mut self, path: PathBuf) -> &EfiVariables {
         self.path = path;
         return self;
