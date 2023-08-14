@@ -57,10 +57,10 @@ impl<const SIZE: usize> EfiVariableBuffer<SIZE> {
     }
 }
 
-impl<const SIZE: usize> TryFrom<&mut dyn Read> for EfiVariableBuffer<SIZE> {
+impl<const SIZE: usize> TryFrom<File> for EfiVariableBuffer<SIZE> {
     type Error = Box<dyn Error>;
 
-    fn try_from(handle: &mut dyn Read) -> Result<Self, Self::Error> {
+    fn try_from(mut handle: File) -> Result<Self, Self::Error> {
         let mut buffer = Self::new();
         let total_buffer_size = match SIZE {
             8 => Ok(2084), // cannot use size_of with EfiVariableBuffer<SIZE>
@@ -209,9 +209,9 @@ impl EfiVariables {
             .path
             .join(String::new() + prefix + &"-" + format!("{}", guid).as_str())
             .join("raw_var");
-        let mut handle = File::open(efi_variable_path)?;
+        let handle = File::open(efi_variable_path)?;
 
-        let efi_variable = self.parse_payload(&mut handle)?;
+        let efi_variable = self.parse_payload(handle)?;
         if *efi_variable.name != *prefix {
             return Err::<EfiVariable, Box<dyn Error>>(
                 "Corrupt variable. Reported name does not match name".into(),
@@ -225,7 +225,7 @@ impl EfiVariables {
         return Ok(efi_variable);
     }
 
-    fn parse_payload(&self, reader: &mut dyn Read) -> Result<EfiVariable, Box<dyn Error>> {
+    fn parse_payload(&self, reader: File) -> Result<EfiVariable, Box<dyn Error>> {
         let mut buffer: Box<dyn EfiNVariableBuffer> = match self.platform_size {
             64 => {
                 Ok(Box::new(Efi64VariableBuffer::try_from(reader)?) as Box<dyn EfiNVariableBuffer>)
@@ -319,56 +319,52 @@ impl EfiVariables {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cell::RefCell;
     use std::cmp::min;
     use std::collections::VecDeque;
     use std::io::{Read, Write};
-    use std::sync::Mutex;
 
-    static BUFFER_MOCK: Mutex<VecDeque<u8>> = Mutex::new(VecDeque::new());
-    static RUNNER_LOCK: Mutex<u8> = Mutex::new(0xff);
-
-    pub struct File<'a> {
-        buffer: &'a Mutex<VecDeque<u8>>,
+    thread_local! {
+        static STRIO_BUFFER: RefCell<VecDeque<u8>> = RefCell::new(VecDeque::new());
     }
 
-    impl File<'_> {
+    pub struct File {}
+
+    impl File {
         pub fn open<P: AsRef<Path>>(_path: P) -> std::io::Result<Self> {
-            return Ok(Self {
-                buffer: &BUFFER_MOCK,
-            });
+            return Ok(File {});
         }
     }
 
-    impl Read for File<'_> {
+    impl Read for File {
         fn read(&mut self, dst: &mut [u8]) -> std::io::Result<usize> {
-            return self.buffer.lock().unwrap().read(dst);
+            return STRIO_BUFFER.with(|b| {
+                return (*b).borrow_mut().read(dst);
+            });
         }
 
         fn read_vectored(&mut self, bufs: &mut [IoSliceMut<'_>]) -> std::io::Result<usize> {
-            let mut inner_buffer = self.buffer.lock().unwrap();
             let mut total_bytes_read: usize = 0;
-            bufs.iter_mut().filter(|b| !b.is_empty()).for_each(|b| {
-                let bytes_read = min(b.len(), inner_buffer.len());
-                b[..bytes_read].copy_from_slice(
-                    &inner_buffer
-                        .drain(..bytes_read)
-                        .collect::<Vec<u8>>()
-                        .as_slice(),
-                );
-                total_bytes_read += bytes_read;
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                bufs.iter_mut().filter(|db| !db.is_empty()).for_each(|db| {
+                    let bytes_read = min(db.len(), sb.len());
+                    db[..bytes_read]
+                        .copy_from_slice(sb.drain(..bytes_read).collect::<Vec<u8>>().as_slice());
+                    total_bytes_read += bytes_read;
+                });
             });
-
             return Ok(total_bytes_read);
         }
     }
 
     #[test]
     fn get_firmware_platform_size() {
-        let _lock = RUNNER_LOCK.lock();
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write("32\n".as_bytes()).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write("32\n".as_bytes()).unwrap();
+            });
         }
         assert_eq!(
             EfiVariables::get_firmware_platform_size(&PathBuf::from("/tmp/unit_test_refivar"))
@@ -377,9 +373,10 @@ mod tests {
         );
 
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write("64\n".as_bytes()).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write("64\n".as_bytes()).unwrap();
+            });
         }
         assert_eq!(
             EfiVariables::get_firmware_platform_size(&PathBuf::from("/tmp/unit_test_refivar"))
@@ -388,9 +385,10 @@ mod tests {
         );
 
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write("1\n".as_bytes()).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write("1\n".as_bytes()).unwrap();
+            });
         }
         assert_eq!(
             EfiVariables::get_firmware_platform_size(&PathBuf::from("/tmp/unit_test_refivar"))
@@ -421,14 +419,8 @@ mod tests {
 
     #[test]
     fn efi_variable_buffer_32_read_empty() {
-        let _lock = RUNNER_LOCK.lock();
-        {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-        }
-        let var = Efi32VariableBuffer::try_from(
-            BUFFER_MOCK.lock().as_deref_mut().unwrap() as &mut dyn Read
-        );
+        let file = File {};
+        let var = Efi32VariableBuffer::try_from(file);
 
         assert_eq!(
             (*var.err().unwrap()).to_string(),
@@ -438,15 +430,14 @@ mod tests {
 
     #[test]
     fn efi_variable_buffer_32_read_short() {
-        let _lock = RUNNER_LOCK.lock();
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write("1".as_bytes()).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write("1".as_bytes()).unwrap();
+            });
         }
-        let var = Efi32VariableBuffer::try_from(
-            BUFFER_MOCK.lock().as_deref_mut().unwrap() as &mut dyn Read
-        );
+        let file = File {};
+        let var = Efi32VariableBuffer::try_from(file);
 
         assert_eq!(
             (*var.err().unwrap()).to_string(),
@@ -456,16 +447,14 @@ mod tests {
 
     #[test]
     fn efi_variable_buffer_32_read_too_long() {
-        let _lock = RUNNER_LOCK.lock();
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write(&[0xff; 2077]).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write(&[0xff; 2077]).unwrap();
+            });
         }
-        let mut mock_stream = File {
-            buffer: &BUFFER_MOCK,
-        };
-        let var = Efi32VariableBuffer::try_from(&mut mock_stream as &mut dyn Read);
+        let file = File {};
+        let var = Efi32VariableBuffer::try_from(file);
 
         assert_eq!(
             (*var.err().unwrap()).to_string(),
@@ -475,15 +464,14 @@ mod tests {
 
     #[test]
     fn efi_variable_buffer_64_read_short() {
-        let _lock = RUNNER_LOCK.lock();
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write("1".as_bytes()).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write("1".as_bytes()).unwrap();
+            });
         }
-        let var = Efi64VariableBuffer::try_from(
-            BUFFER_MOCK.lock().as_deref_mut().unwrap() as &mut dyn Read
-        );
+        let file = File {};
+        let var = Efi64VariableBuffer::try_from(file);
 
         assert_eq!(
             (*var.err().unwrap()).to_string(),
@@ -493,16 +481,14 @@ mod tests {
 
     #[test]
     fn efi_variable_buffer_64_read_too_long() {
-        let _lock = RUNNER_LOCK.lock();
         {
-            let mut mock_buffer = BUFFER_MOCK.lock().unwrap();
-            mock_buffer.clear();
-            mock_buffer.write(&[0xff; 2085]).unwrap();
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write(&[0xff; 2085]).unwrap();
+            });
         }
-        let mut mock_stream = File {
-            buffer: &BUFFER_MOCK,
-        };
-        let var = Efi64VariableBuffer::try_from(&mut mock_stream as &mut dyn Read);
+        let file = File {};
+        let var = Efi64VariableBuffer::try_from(file);
 
         assert_eq!(
             (*var.err().unwrap()).to_string(),
