@@ -29,7 +29,7 @@ impl Ord for EfiGuid {
                 return self.d[7 - i].cmp(&other.d[7 - i]);
             }
         }
-        return Ordering::Equal;
+        Ordering::Equal
     }
 }
 
@@ -41,13 +41,13 @@ impl PartialOrd for EfiGuid {
 
 impl PartialEq for EfiGuid {
     fn eq(&self, other: &Self) -> bool {
-        return self.a == other.a && self.b == other.b && self.c == other.c && self.d == other.d;
+        self.a == other.a && self.b == other.b && self.c == other.c && self.d == other.d
     }
 }
 
 impl fmt::Display for EfiGuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        return write!(
+        write!(
             f,
             "{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
             self.a,
@@ -59,7 +59,7 @@ impl fmt::Display for EfiGuid {
             &self.d[2..]
                 .iter()
                 .fold(0u64, |sum, b| (sum << 8) | *b as u64)
-        );
+        )
     }
 }
 
@@ -67,7 +67,7 @@ macro_rules! from_byte_array {
     ($type:ty) => {
         impl From<$type> for EfiGuid {
             fn from(value: $type) -> Self {
-                return Self {
+                Self {
                     a: (u32::from(value[3] as u8) << 24)
                         | (u32::from(value[2] as u8) << 16)
                         | (u32::from(value[1] as u8) << 8)
@@ -84,7 +84,7 @@ macro_rules! from_byte_array {
                         (value[14] as u8),
                         (value[15] as u8),
                     ],
-                };
+                }
             }
         }
     };
@@ -104,7 +104,7 @@ macro_rules! try_from_byte_slice {
             fn try_from(value: &[$type]) -> Result<Self, EfiGuidError> {
                 let len = value.len();
 
-                return match <&[$type; 16]>::try_from(value) {
+                match <&[$type; 16]>::try_from(value) {
                     Ok(o) => Ok(Self::from(o)),
                     Err(_) => {
                         if len < 16 {
@@ -113,7 +113,7 @@ macro_rules! try_from_byte_slice {
                             Err(EfiGuidError::SliceLengthTooLong)
                         }
                     }
-                };
+                }
             }
         }
     };
@@ -159,7 +159,7 @@ impl FromStr for EfiGuid {
     type Err = EfiGuidError;
 
     fn from_str(value: &str) -> Result<Self, EfiGuidError> {
-        let chars: Vec<char> = value.chars().into_iter().collect();
+        let chars: Vec<char> = value.chars().collect();
         if chars.len() != 36 {
             return Err(EfiGuidError::BadFormat);
         }
@@ -173,14 +173,14 @@ impl FromStr for EfiGuid {
                     }
                     return None;
                 }
-                return match c.to_digit(16) {
+                match c.to_digit(16) {
                     Some(d) => Some(Ok(d as u8)),
                     None => Some(Err(EfiGuidError::BadFormat)),
-                };
+                }
             })
             .collect::<Result<Vec<u8>, _>>()?;
 
-        return Ok(Self {
+        Ok(Self {
             a: digits[0..8]
                 .iter()
                 .fold(0u32, |sum, d| (sum << 4) + u32::from(*d)),
@@ -192,8 +192,8 @@ impl FromStr for EfiGuid {
                 .fold(0u16, |sum, d| (sum << 4) + u16::from(*d)),
             d: match <[u8; 8]>::try_from(
                 iter::zip(
-                    digits[16..].into_iter().step_by(2),
-                    digits[16..].into_iter().skip(1).step_by(2),
+                    digits[16..].iter().step_by(2),
+                    digits[16..].iter().skip(1).step_by(2),
                 )
                 .map(|(h, l)| (h << 4) + l)
                 .collect::<Vec<u8>>(),
@@ -202,7 +202,7 @@ impl FromStr for EfiGuid {
                 Err(_) => Err(EfiGuidError::BadFormat),
             }
             .unwrap(),
-        });
+        })
     }
 }
 
@@ -210,7 +210,7 @@ impl TryFrom<&str> for EfiGuid {
     type Error = EfiGuidError;
 
     fn try_from(value: &str) -> Result<Self, EfiGuidError> {
-        return value.parse::<Self>();
+        value.parse::<Self>()
     }
 }
 

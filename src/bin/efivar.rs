@@ -1,13 +1,14 @@
-use crate::efivar::print_mode::{Decimal, Verbose};
-use crate::efivar::types::PrintMode;
-use clap;
-use efivar;
+use efivar::{
+    self,
+    print_mode::{Decimal, Verbose},
+    types::PrintMode,
+};
 use ignore_result::Ignore;
 use std::io;
 use std::process::ExitCode;
 
 fn create_parser() -> clap::Command {
-    return clap::Command::new("efivar")
+    clap::Command::new("efivar")
         .args_override_self(true)
         .disable_help_flag(true)
         .disable_version_flag(true)
@@ -82,7 +83,7 @@ fn create_parser() -> clap::Command {
             .long("guids-list-path")
             .value_name("guids-list-path")
             .default_value(efivar::efi_guids::DEFAULT_GUIDS_LIST_PATH)
-            .help(format!("specify path to GUIDs list file."))
+            .help("specify path to GUIDs list file.".to_string())
             .action(clap::ArgAction::Set)
         )
         .arg(clap::Arg::new("list-guids")
@@ -108,7 +109,7 @@ fn create_parser() -> clap::Command {
             .long("usage")
             .help("ignored for compatibility")
             .action(clap::ArgAction::Help)
-        );
+        )
 }
 
 fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
@@ -120,7 +121,7 @@ fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
             for v in variables {
                 println!("{}", v);
             }
-            return std::process::ExitCode::from(0);
+            std::process::ExitCode::from(0)
         }
         Err(_) => {
             let efivar_variables: efivar::efivar::EfiVariables =
@@ -130,11 +131,11 @@ fn list_variables(_parser_args: clap::ArgMatches) -> ExitCode {
                     for v in variables {
                         println!("{}", v);
                     }
-                    return std::process::ExitCode::from(0);
+                    std::process::ExitCode::from(0)
                 }
                 Err(e) => {
                     eprintln!("Failed to access EFI variables: {}", e);
-                    return std::process::ExitCode::from(1);
+                    std::process::ExitCode::from(1)
                 }
             }
         }
@@ -152,7 +153,7 @@ fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::Prin
                         PrintMode::VERBOSE => println!("{}", Verbose(&var)),
                         PrintMode::DECIMAL => println!("{}", Decimal(&var)),
                     }
-                    return std::process::ExitCode::from(0);
+                    std::process::ExitCode::from(0)
                 }
                 Err(_) => {
                     let efivar_variables: efivar::efivar::EfiVariables =
@@ -163,25 +164,25 @@ fn print_variable(parser_args: clap::ArgMatches, print_mode: efivar::types::Prin
                                 PrintMode::VERBOSE => println!("{}", Verbose(&var)),
                                 PrintMode::DECIMAL => println!("{}", Decimal(&var)),
                             }
-                            return std::process::ExitCode::from(0);
+                            std::process::ExitCode::from(0)
                         }
                         Err(e) => {
                             eprintln!("Failed to read variable: {}", e);
-                            return std::process::ExitCode::from(1);
+                            std::process::ExitCode::from(1)
                         }
                     }
                 }
-            };
+            }
         }
         None => {
             eprintln!("No variable name given");
-            return std::process::ExitCode::from(1);
+            std::process::ExitCode::from(1)
         }
-    };
+    }
 }
 
 fn append_attributes(parser_args: clap::ArgMatches) -> ExitCode {
-    return std::process::ExitCode::from(0);
+    std::process::ExitCode::from(0)
 }
 
 fn list_guids(parser_args: clap::ArgMatches) -> ExitCode {
@@ -197,46 +198,44 @@ fn list_guids(parser_args: clap::ArgMatches) -> ExitCode {
             return std::process::ExitCode::from(e.raw_os_error().unwrap_or(1) as u8);
         }
     }
-    return std::process::ExitCode::from(0);
+    std::process::ExitCode::from(0)
 }
 
 fn write_variable(parser_args: clap::ArgMatches) -> ExitCode {
-    return std::process::ExitCode::from(0);
+    std::process::ExitCode::from(0)
 }
 
 fn import_variable(parser_args: clap::ArgMatches) -> ExitCode {
-    return std::process::ExitCode::from(0);
+    std::process::ExitCode::from(0)
 }
 
 fn export_variable(parser_args: clap::ArgMatches) -> ExitCode {
-    return std::process::ExitCode::from(0);
+    std::process::ExitCode::from(0)
 }
 
 fn main() -> ExitCode {
     let mut parser = create_parser();
     let matches = parser.get_matches_mut();
     if matches.get_flag("list") {
-        return list_variables(matches);
+        list_variables(matches)
     } else if matches.get_flag("print") {
-        return print_variable(matches, efivar::types::PrintMode::VERBOSE);
+        print_variable(matches, efivar::types::PrintMode::VERBOSE)
     } else if matches.get_flag("append") {
-        return append_attributes(matches);
+        append_attributes(matches)
     } else if matches.get_flag("list-guids") {
-        return list_guids(matches);
+        list_guids(matches)
     } else if matches.get_flag("write") {
-        return write_variable(matches);
+        write_variable(matches)
     } else if matches.get_flag("print-decimal") {
-        return print_variable(matches, efivar::types::PrintMode::DECIMAL);
+        print_variable(matches, efivar::types::PrintMode::DECIMAL)
     } else if matches.get_one::<&str>("import").is_some() {
-        return import_variable(matches);
+        import_variable(matches)
     } else if matches.get_one::<&str>("export").is_some() {
-        return export_variable(matches);
+        export_variable(matches)
+    } else if matches.get_one::<String>("name").is_some() {
+        return print_variable(matches, efivar::types::PrintMode::VERBOSE);
     } else {
-        if matches.get_one::<String>("name").is_some() {
-            return print_variable(matches, efivar::types::PrintMode::VERBOSE);
-        } else {
-            parser.write_help(&mut io::stderr()).ignore();
-            return std::process::ExitCode::from(1);
-        }
+        parser.write_help(&mut io::stderr()).ignore();
+        return std::process::ExitCode::from(1);
     }
 }

@@ -1,1 +1,1 @@
-pub const VALUE: &'static str = "@GUIDS_LIST_PATH@";
+pub const VALUE: &str = "@GUIDS_LIST_PATH@";

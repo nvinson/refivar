@@ -14,8 +14,8 @@ use std::fs::File;
 use tests::File;
 
 const EFI_VAR_NAME_LEN: usize = 512;
-const EFIVARS_FW_PLATFORM_SZ_PATH: &'static str = "/sys/firmware/efi/fw_platform_size";
-const EFIVARS_PATH: &'static str = "/sys/firmware/efi/vars";
+const EFIVARS_FW_PLATFORM_SZ_PATH: &str = "/sys/firmware/efi/fw_platform_size";
+const EFIVARS_PATH: &str = "/sys/firmware/efi/vars";
 
 pub struct EfiVariables {
     path: PathBuf,
@@ -46,14 +46,14 @@ struct EfiVariableBuffer<const SIZE: usize> {
 
 impl<const SIZE: usize> EfiVariableBuffer<SIZE> {
     fn new() -> Self {
-        return EfiVariableBuffer {
+        EfiVariableBuffer {
             name: [0; EFI_VAR_NAME_LEN * 2],
             guid: [0; 16],
             data_size: [0; SIZE],
             data: [0; 1024],
             status: [0; SIZE],
             attributes: [0; 4],
-        };
+        }
     }
 }
 
@@ -163,6 +163,12 @@ impl<const SIZE: usize> EfiNVariableBuffer for EfiVariableBuffer<SIZE> {
     }
 }
 
+impl Default for EfiVariables {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EfiVariables {
     pub fn new() -> Self {
         let mut variables = EfiVariables {
@@ -177,23 +183,22 @@ impl EfiVariables {
                 .unwrap(),
             )
             .unwrap();
-        return variables;
+        variables
     }
 
     pub fn set_path(&mut self, path: PathBuf) -> &EfiVariables {
         self.path = path;
-        return self;
+        self
     }
 
     pub fn list(&self) -> io::Result<efivarfs::EfiVariablesNameIter> {
         let mut e: efivarfs::EfiVariables = efivarfs::EfiVariables::new();
         e.set_path(self.path.clone());
-        return e.list();
+        e.list()
     }
 
     pub fn get_variable(&self, name: &str) -> Result<EfiVariable, Box<dyn Error>> {
-        if name.len() < MIN_VAR_FILE_NAME_LEN
-            || name.bytes().nth(MIN_VAR_FILE_NAME_LEN - 2).unwrap() != b'-'
+        if name.len() < MIN_VAR_FILE_NAME_LEN || name.as_bytes()[MIN_VAR_FILE_NAME_LEN - 2] != b'-'
         {
             return Err(io::Error::from(io::ErrorKind::InvalidInput).into());
         }
@@ -207,7 +212,7 @@ impl EfiVariables {
         .unwrap();
         let efi_variable_path = self
             .path
-            .join(String::new() + prefix + &"-" + format!("{}", guid).as_str())
+            .join(String::new() + prefix + "-" + format!("{}", guid).as_str())
             .join("raw_var");
         let handle = File::open(efi_variable_path)?;
 
@@ -222,7 +227,7 @@ impl EfiVariables {
                 "Corrupt variable. Reported guid does not match guid".into(),
             );
         }
-        return Ok(efi_variable);
+        Ok(efi_variable)
     }
 
     fn parse_payload(&self, reader: File) -> Result<EfiVariable, Box<dyn Error>> {
@@ -244,7 +249,7 @@ impl EfiVariables {
                     if utf16_char != 0u16 {
                         return Some(utf16_char);
                     }
-                    return None;
+                    None
                 })
                 .collect::<Vec<u16>>(),
         )?
@@ -277,16 +282,16 @@ impl EfiVariables {
             buffer.attributes(),
         )?));
 
-        return Ok(EfiVariable {
+        Ok(EfiVariable {
             name,
             guid,
             data,
             attributes,
-        });
+        })
     }
 
     fn set_firmware_platform_size(&mut self, size: usize) -> Result<(), Box<dyn Error>> {
-        return match size {
+        match size {
             64 => {
                 self.platform_size = 64;
                 Ok(())
@@ -296,23 +301,23 @@ impl EfiVariables {
                 Ok(())
             }
             _ => Err(format!("Unsupported platform size: {}", size).into()),
-        };
+        }
     }
 
     fn get_firmware_platform_size(path: &Path) -> Result<usize, Box<dyn Error>> {
         let mut handle = File::open(path)?;
         let mut chars: String = String::new();
 
-        return match handle.read_to_string(&mut chars) {
+        match handle.read_to_string(&mut chars) {
             Ok(_) => {
                 let ws_index = match chars.find(char::is_whitespace) {
                     Some(index) => index,
                     None => chars.len(),
                 };
-                Ok(usize::from_str_radix(&chars[0..ws_index], 10)?)
+                Ok(chars[0..ws_index].parse::<usize>()?)
             }
             Err(e) => Err(e.into()),
-        };
+        }
     }
 }
 
@@ -332,15 +337,13 @@ mod tests {
 
     impl File {
         pub fn open<P: AsRef<Path>>(_path: P) -> std::io::Result<Self> {
-            return Ok(File {});
+            Ok(File {})
         }
     }
 
     impl Read for File {
         fn read(&mut self, dst: &mut [u8]) -> std::io::Result<usize> {
-            return STRIO_BUFFER.with(|b| {
-                return (*b).borrow_mut().read(dst);
-            });
+            STRIO_BUFFER.with(|b| (*b).borrow_mut().read(dst))
         }
 
         fn read_vectored(&mut self, bufs: &mut [IoSliceMut<'_>]) -> std::io::Result<usize> {
@@ -354,7 +357,7 @@ mod tests {
                     total_bytes_read += bytes_read;
                 });
             });
-            return Ok(total_bytes_read);
+            Ok(total_bytes_read)
         }
     }
 
@@ -363,7 +366,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write("32\n".as_bytes()).unwrap();
+                sb.write_all("32\n".as_bytes()).unwrap();
             });
         }
         assert_eq!(
@@ -375,7 +378,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write("64\n".as_bytes()).unwrap();
+                sb.write_all("64\n".as_bytes()).unwrap();
             });
         }
         assert_eq!(
@@ -387,7 +390,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write("1\n".as_bytes()).unwrap();
+                sb.write_all("1\n".as_bytes()).unwrap();
             });
         }
         assert_eq!(
@@ -433,7 +436,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write("1".as_bytes()).unwrap();
+                sb.write_all("1".as_bytes()).unwrap();
             });
         }
         let file = File {};
@@ -450,7 +453,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write(&[0xff; 2077]).unwrap();
+                sb.write_all(&[0xff; 2077]).unwrap();
             });
         }
         let file = File {};
@@ -467,7 +470,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write("1".as_bytes()).unwrap();
+                sb.write_all("1".as_bytes()).unwrap();
             });
         }
         let file = File {};
@@ -484,7 +487,7 @@ mod tests {
         {
             STRIO_BUFFER.with(|tl_b| {
                 let mut sb = (*tl_b).borrow_mut();
-                sb.write(&[0xff; 2085]).unwrap();
+                sb.write_all(&[0xff; 2085]).unwrap();
             });
         }
         let file = File {};

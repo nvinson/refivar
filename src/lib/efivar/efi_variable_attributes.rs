@@ -16,7 +16,7 @@ pub static APPEND_WRITE: EfiVariableAttribute = EfiVariableAttribute::new("Appen
 pub static ENHANCED_AUTHENTICATED_ACCESS: EfiVariableAttribute =
     EfiVariableAttribute::new("Enhanced Authenticated Access", 0x80);
 
-pub static EFI_VARIABLE_ATTRIBUTES: &'static [&EfiVariableAttribute] = &[
+pub static EFI_VARIABLE_ATTRIBUTES: &[&EfiVariableAttribute] = &[
     &NON_VOLATILE,
     &BOOTSERVICE_ACCESS,
     &RUNTIME_ACCESS,
@@ -34,5 +34,5 @@ pub fn parse_attributes<'a>(value: u32) -> HashSet<&'a EfiVariableAttribute> {
             set.insert(*attr);
         }
     }
-    return set;
+    set
 }

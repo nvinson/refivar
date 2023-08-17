@@ -10,10 +10,10 @@ pub struct EfiGuidListEntry {
 
 impl fmt::Display for EfiGuidListEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        return write!(
+        write!(
             f,
             "{{{}}}\t{{{}}}\t{}",
             self.guid, self.name, self.description
-        );
+        )
     }
 }

@@ -19,7 +19,7 @@ impl fmt::Display for Decimal<'_> {
                 f.write_str(&format!(" {}", b))?;
             }
         }
-        return Ok(());
+        Ok(())
     }
 }
 

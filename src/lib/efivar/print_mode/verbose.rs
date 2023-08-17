@@ -30,9 +30,9 @@ impl fmt::Display for Verbose<'_> {
                             decode[j - i] = u32::from('.') as u8;
                         }
                         if j < i + 8 {
-                            f.write_str(&format!("{:02x} ", u8::from(*c)))?;
+                            f.write_str(&format!("{:02x} ", *c))?;
                         } else {
-                            f.write_str(&format!(" {:02x}", u8::from(*c)))?;
+                            f.write_str(&format!(" {:02x}", *c))?;
                         }
                     }
                     None => {
@@ -44,7 +44,7 @@ impl fmt::Display for Verbose<'_> {
             f.write_str(&format!("  |{}|\n", std::str::from_utf8(&decode).unwrap()))?;
         }
         f.write_str(&format!("{:08x}", self.0.data.len()))?;
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -150,8 +150,8 @@ mod tests {
             guid: EfiGuid::try_from("12345678-1234-1234-1234-12345678abcd").unwrap(),
             name: "Unit Test Variable".into(),
             data: [
-                0x00, 0x00, 0x54, 0x65, 0x73, 0x74, 0x20, 0x50,
-                0x61, 0x73, 0x73, 0x65, 0x64, 0x21, 0x00, 0x00,
+                0x00, 0x00, 0x54, 0x65, 0x73, 0x74, 0x20, 0x50, 0x61, 0x73, 0x73, 0x65, 0x64, 0x21,
+                0x00, 0x00,
             ]
             .to_vec(),
         };

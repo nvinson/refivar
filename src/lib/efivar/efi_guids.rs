@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Error};
 
-pub const DEFAULT_GUIDS_LIST_PATH: &'static str = efi_guids_list_path::VALUE;
+pub const DEFAULT_GUIDS_LIST_PATH: &str = efi_guids_list_path::VALUE;
 
 pub enum GuidListSortField {
     Guid,
@@ -27,11 +27,15 @@ struct JsonEfiGuidListEntry {
 
 impl Default for EfiGuidList {
     fn default() -> Self {
-        return EfiGuidList { guids_map: None };
+        Self::new()
     }
 }
 
 impl EfiGuidList {
+    pub fn new() -> Self {
+        Self { guids_map: None }
+    }
+
     pub fn load(&mut self, path: &String) -> Result<(), Error> {
         let mut map: HashMap<String, EfiGuidListEntry> = HashMap::new();
         let reader = BufReader::new(File::open(path)?);
@@ -73,15 +77,12 @@ impl EfiGuidList {
 
     pub fn guids(&self, sorted_by: GuidListSortField) -> Vec<&EfiGuidListEntry> {
         match sorted_by {
-            GuidListSortField::None => {
-                let guids = self
-                    .guids_map
-                    .as_ref()
-                    .unwrap()
-                    .values()
-                    .collect::<Vec<_>>();
-                return guids;
-            }
+            GuidListSortField::None => self
+                .guids_map
+                .as_ref()
+                .unwrap()
+                .values()
+                .collect::<Vec<_>>(),
             GuidListSortField::Guid => {
                 let mut sorted_guids = self
                     .guids_map
@@ -90,7 +91,7 @@ impl EfiGuidList {
                     .values()
                     .collect::<Vec<_>>();
                 sorted_guids.sort_unstable_by(|e1, e2| e1.guid.cmp(&e2.guid));
-                return sorted_guids;
+                sorted_guids
             }
             GuidListSortField::Id => {
                 let mut sorted_guids = self
@@ -100,7 +101,7 @@ impl EfiGuidList {
                     .values()
                     .collect::<Vec<_>>();
                 sorted_guids.sort_unstable_by(|e1, e2| e1.name.cmp(&e2.name));
-                return sorted_guids;
+                sorted_guids
             }
         }
     }
