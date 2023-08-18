@@ -14,13 +14,17 @@ if rustc.version().version_compare('<1.69')
   error('rustc 1.69 required. Found ' + rustc.version())
 endif
 
-serde_derive_rs_dep = dependency('serde_derive-rs', version: '=1.0.163')
-
-features = [
+features = []
+if rustc.get_id().contains('clippy')
+  features += [ '--allow=clippy::all' ]
+endif
+features += [
   '--cfg', 'feature="std"',
   '--cfg', 'feature="derive"',
   '--cfg', 'feature="serde_derive"',
 ]
+
+serde_derive_rs_dep = dependency('serde_derive-rs', version: '=1.0.163')
 
 lib_serde = static_library('serde', 'src/lib.rs',
   rust_args: features,

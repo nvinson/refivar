@@ -14,7 +14,11 @@ if rustc.version().version_compare('<1.69')
   error('rustc 1.69 required. Found ' + rustc.version())
 endif
 
-features = [
+features = []
+if rustc.get_id().contains('clippy')
+  features += [ '--allow=clippy::all' ]
+endif
+features += [
   '--cfg', 'feature="default"',
   '--cfg', 'feature="proc-macro"',
   '--cfg', 'use_proc_macro',

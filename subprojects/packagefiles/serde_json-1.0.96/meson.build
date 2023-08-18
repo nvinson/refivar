@@ -21,7 +21,11 @@ else
 endif
 message('FPU limb width set to @0@'.format(fpu_limb_width))
 
-features = [
+features = []
+if rustc.get_id().contains('clippy')
+  features += [ '--allow=clippy::all' ]
+endif
+features += [
   '--cfg', 'limb_width_@0@'.format(fpu_limb_width),
   '--cfg', 'feature="std"'
 ]

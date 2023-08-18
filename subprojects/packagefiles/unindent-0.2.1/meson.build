@@ -14,8 +14,10 @@ if rustc.version().version_compare('<1.69')
   error('rustc 1.69 required. Found ' + rustc.version())
 endif
 
-features = [
-]
+features = []
+if rustc.get_id().contains('clippy')
+  features += [ '--allow=clippy::all' ]
+endif
 
 lib_unindent = static_library('unindent', 'src/lib.rs',
   rust_args: features,

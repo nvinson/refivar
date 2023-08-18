@@ -9,9 +9,6 @@ project(
   ]
 )
 
-env = environment()
-env.set('RUSTC', '')
-
 fs = import('fs')
 rust = import('rust')
 

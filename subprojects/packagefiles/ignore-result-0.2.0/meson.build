@@ -14,8 +14,13 @@ if rustc.version().version_compare('<1.69')
   error('rustc 1.69 required. Found ' + rustc.version())
 endif
 
+features = []
+if rustc.get_id().contains('clippy')
+  features += [ '--allow=clippy::all' ]
+endif
+
 lib_ignore_result = static_library('ignore_result', 'src/lib.rs',
-  rust_args: [],
+  rust_args: features,
   rust_crate_type: 'rlib',
   dependencies: [],
   pic: true,
