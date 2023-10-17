@@ -94,7 +94,6 @@ impl<const SIZE: usize> TryFrom<File> for EfiVariableBuffer<SIZE> {
             });
             match handle.read_vectored(io_vectors.as_mut_slice()) {
                 Ok(bytes_read) => {
-                    eprintln!("read bytes {}", bytes_read);
                     if bytes_read == 0 {
                         return Err(format!(
                             "Corrupt variable. Read {} byte(s) but expected to read {}.",
@@ -333,29 +332,41 @@ mod tests {
         static STRIO_BUFFER: RefCell<VecDeque<u8>> = RefCell::new(VecDeque::new());
     }
 
-    pub struct File {}
+    pub struct File {
+        read_: fn(&mut [u8]) -> std::io::Result<usize>,
+    }
 
     impl File {
+        fn new() -> Self {
+            Self {
+                read_: |dst: &mut [u8]| STRIO_BUFFER.with(|b| (*b).borrow_mut().read(dst)),
+            }
+        }
+
         pub fn open<P: AsRef<Path>>(_path: P) -> std::io::Result<Self> {
-            Ok(File {})
+            Ok(File::new())
+        }
+    }
+
+    impl Default for File {
+        fn default() -> Self {
+            Self::new()
         }
     }
 
     impl Read for File {
         fn read(&mut self, dst: &mut [u8]) -> std::io::Result<usize> {
-            STRIO_BUFFER.with(|b| (*b).borrow_mut().read(dst))
+            (self.read_)(dst)
         }
 
         fn read_vectored(&mut self, bufs: &mut [IoSliceMut<'_>]) -> std::io::Result<usize> {
             let mut total_bytes_read: usize = 0;
             STRIO_BUFFER.with(|tl_b| {
-                let mut sb = (*tl_b).borrow_mut();
                 bufs.iter_mut().filter(|db| !db.is_empty()).for_each(|db| {
-                    let bytes_read = min(db.len(), sb.len());
-                    db[..bytes_read]
-                        .copy_from_slice(sb.drain(..bytes_read).collect::<Vec<u8>>().as_slice());
+                    let bytes_read = min(db.len(), (*tl_b).borrow().len());
+                    (self.read_)(&mut db[..bytes_read]).unwrap();
                     total_bytes_read += bytes_read;
-                });
+                })
             });
             Ok(total_bytes_read)
         }
@@ -422,7 +433,7 @@ mod tests {
 
     #[test]
     fn efi_variable_buffer_32_read_empty() {
-        let file = File {};
+        let file = File::new();
         let var = Efi32VariableBuffer::try_from(file);
 
         assert_eq!(
@@ -439,7 +450,7 @@ mod tests {
                 sb.write_all("1".as_bytes()).unwrap();
             });
         }
-        let file = File {};
+        let file = File::new();
         let var = Efi32VariableBuffer::try_from(file);
 
         assert_eq!(
@@ -456,7 +467,33 @@ mod tests {
                 sb.write_all(&[0xff; 2077]).unwrap();
             });
         }
-        let file = File {};
+        let file = File::new();
+        let var = Efi32VariableBuffer::try_from(file);
+
+        assert_eq!(
+            (*var.err().unwrap()).to_string(),
+            "Corrupt variable. Read 2077 byte(s) but expected to read 2076."
+        );
+    }
+
+    #[test]
+    fn efi_variable_buffer_32_multiple_reads() {
+        {
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write_all(&[0xff; 2077]).unwrap();
+            });
+        }
+        let file = File {
+            read_: |dst: &mut [u8]| {
+                if dst.len() > 0 {
+                    dst[0] = 0xff;
+                    Ok(1)
+                } else {
+                    Ok(0)
+                }
+            },
+        };
         let var = Efi32VariableBuffer::try_from(file);
 
         assert_eq!(
@@ -473,7 +510,7 @@ mod tests {
                 sb.write_all("1".as_bytes()).unwrap();
             });
         }
-        let file = File {};
+        let file = File::new();
         let var = Efi64VariableBuffer::try_from(file);
 
         assert_eq!(
@@ -490,7 +527,33 @@ mod tests {
                 sb.write_all(&[0xff; 2085]).unwrap();
             });
         }
-        let file = File {};
+        let file = File::new();
+        let var = Efi64VariableBuffer::try_from(file);
+
+        assert_eq!(
+            (*var.err().unwrap()).to_string(),
+            "Corrupt variable. Read 2085 byte(s) but expected to read 2084."
+        );
+    }
+
+    #[test]
+    fn efi_variable_buffer_64_multiple_reads() {
+        {
+            STRIO_BUFFER.with(|tl_b| {
+                let mut sb = (*tl_b).borrow_mut();
+                sb.write_all(&[0xff; 2084]).unwrap();
+            });
+        }
+        let file = File {
+            read_: |dst: &mut [u8]| {
+                if dst.len() > 0 {
+                    dst[0] = 0xff;
+                    Ok(1)
+                } else {
+                    Ok(0)
+                }
+            },
+        };
         let var = Efi64VariableBuffer::try_from(file);
 
         assert_eq!(
