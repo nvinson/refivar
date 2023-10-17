@@ -1,7 +1,6 @@
 use crate::efi_guids_list_path;
 use crate::types::EfiGuid;
 use crate::types::EfiGuidListEntry;
-use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Error};
@@ -18,13 +17,6 @@ pub struct EfiGuidList {
     guids_map: Option<HashMap<String, EfiGuidListEntry>>,
 }
 
-#[derive(Deserialize)]
-struct JsonEfiGuidListEntry {
-    name: String,
-    description: String,
-    guid: String,
-}
-
 impl Default for EfiGuidList {
     fn default() -> Self {
         Self::new()
@@ -39,25 +31,18 @@ impl EfiGuidList {
     pub fn load(&mut self, path: &String) -> Result<(), Error> {
         let mut map: HashMap<String, EfiGuidListEntry> = HashMap::new();
         let reader = BufReader::new(File::open(path)?);
-        let result: serde_json::Result<Vec<JsonEfiGuidListEntry>> = serde_json::from_reader(reader);
+        let result: serde_json::Result<Vec<EfiGuidListEntry>> = serde_json::from_reader(reader);
         match result {
             Ok(v) => {
                 for entry in v {
-                    match entry.guid.parse::<EfiGuid>() {
-                        Ok(g) => {
-                            map.insert(
-                                entry.name.clone(),
-                                EfiGuidListEntry {
-                                    guid: g,
-                                    name: entry.name.clone(),
-                                    description: entry.description,
-                                },
-                            );
-                        }
-                        Err(_) => {
-                            eprintln!("Entry with UUID: {} invalid. Skipping...", entry.guid);
-                        }
-                    };
+                    map.insert(
+                        entry.name.clone(),
+                        EfiGuidListEntry {
+                            guid: entry.guid,
+                            name: entry.name.clone(),
+                            description: entry.description,
+                        },
+                    );
                 }
             }
             Err(e) => return Err(e.into()),

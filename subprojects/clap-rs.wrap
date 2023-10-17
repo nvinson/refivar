@@ -1,10 +1,9 @@
 [wrap-file]
-directory = clap-4.3.0
-
-source_url = https://crates.io/api/v1/crates/clap/4.3.0/download
-source_filename = clap-4.3.0.tar.gz
-source_hash = 93aae7a4192245f70fe75dd9157fc7b4a5bf53e88d30bd4396f7d8f9284d5acc
-patch_directory = clap-4.3.0
+directory = clap-4.5.8
+source_url = https://crates.io/api/v1/crates/clap/4.5.8/download
+source_filename = clap-4.5.8.tar.gz
+source_hash = 84b3edb18336f4df585bc9aa31dd99c036dfa5dc5e9a2939a722a188f3a8970d
+method = cargo
 
 [provide]
-clap-rs = clap_rs_dep
+dependency_names = clap-4-rs

@@ -1,10 +1,9 @@
 [wrap-file]
-directory = indoc-2.0.3
-
-source_url = https://crates.io/api/v1/crates/indoc/2.0.3/download
-source_filename = indoc-2.0.3.tar.gz
-source_hash = 2c785eefb63ebd0e33416dfcb8d6da0bf27ce752843a45632a67bf10d4d4b5c4
-patch_directory = indoc-2.0.3
+directory = indoc-2.0.5
+source_url = https://crates.io/api/v1/crates/indoc/2.0.5/download
+source_filename = indoc-2.0.5.tar.gz
+source_hash = b248f5224d1d606005e02c97f5aa4e88eeb230488bcc03bc9ca4d7991399f2b5
+method = cargo
 
 [provide]
-indoc-rs = indoc_rs_dep
+dependency_names = indoc-2-rs

@@ -2,9 +2,9 @@
 directory = ignore-result-0.2.0
 
 source_url = https://crates.io/api/v1/crates/ignore-result/0.2.0/download
-source_filename = ignore-result.tar.gz
+source_filename = ignore-result-0.2.tar.gz
 source_hash = 665ff4dce8edd10d490641ccb78949832f1ddbff02c584fb1f85ab888fe0e50c
-patch_directory = ignore-result-0.2.0
+method = cargo
 
 [provide]
-ignore-result-rs = ignore_result_rs_dep
+dependency_names = ignore-result-0.2-rs

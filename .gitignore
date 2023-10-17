@@ -1,25 +1,5 @@
 build
 subprojects/packagecache
 
-subprojects/anstyle-[0-9]*
-subprojects/bitflags-[0-9]*
-subprojects/clap-[0-9]*
-subprojects/clap_builder-[0-9]*
-subprojects/clap_lex-[0-9]*
-subprojects/ignore-result-[0-9]*
-subprojects/indoc-[0-9]*
-subprojects/io-lifetimes-[0-9]*
-subprojects/itoa-[0-9]*
-subprojects/libc-[0-9]*
-subprojects/linux-raw-sys-[0-9]*
-subprojects/proc-macro2-[0-9]*
-subprojects/quote-[0-9]*
-subprojects/rustix-[0-9]*
-subprojects/ryu-[0-9]*
-subprojects/serde-[0-9]*
-subprojects/serde_derive-[0-9]*
-subprojects/serde_json-[0-9]*
-subprojects/syn-[0-9]*
-subprojects/terminal_size-[0-9]*
-subprojects/unicode-ident-[0-9]*
-subprojects/unindent-[0-9]*
+subprojects/*
+!subprojects/*.wrap

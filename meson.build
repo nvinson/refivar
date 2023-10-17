@@ -2,11 +2,11 @@ project(
   'refivar',
   'rust',
   version: '0.1',
-  meson_version: '>= 1.2.0',
-  default_options: [
-    'warning_level=3',
-    'rust_std=2021'
-  ]
+  meson_version: '>= 1.4.0',
+  default_options: {
+    'warning_level': '3',
+    'rust_std': '2021'
+  }
 )
 
 fs = import('fs')
@@ -17,11 +17,11 @@ if rustc.version().version_compare('<1.70')
   error('rustc 1.70 required. Found ' + rustc.version())
 endif
 
-clap_rs_dep = dependency('clap-rs', version: '>=4.1.13')
-ignore_result_rs_dep = dependency('ignore-result-rs', version: '>=0.2.0')
-indoc_rs_dep = dependency('indoc-rs', version: '>=2.0.3')
-serde_json_rs_dep = dependency('serde_json-rs', version: '>=1.0.96')
-serde_rs_dep = dependency('serde-rs', version: '>=1.0.160')
+clap_rs_dep = dependency('clap-4-rs', version: '>=4.5.8')
+ignore_result_rs_dep = dependency('ignore-result-0.2-rs', version: '>=0.2.0')
+indoc_rs_dep = dependency('indoc-2-rs', version: '>=2.0.5')
+serde_json_rs_dep = dependency('serde_json-1-rs', version: '>=1.0.119')
+serde_rs_dep = dependency('serde-1-rs', version: '>=1.0.203')
 
 fqDataDir = get_option('prefix') / get_option('datadir') / 'refivar'
 
@@ -83,7 +83,7 @@ lib_refivar = static_library(
       ],
     }
   ),
-  rust_crate_type: 'lib',
+  rust_abi: 'rust',
   dependencies: [
     indoc_rs_dep,
     serde_json_rs_dep,

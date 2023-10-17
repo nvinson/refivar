@@ -1,10 +1,11 @@
 [wrap-file]
-directory = serde-1.0.163
+directory = serde-1.0.203
 
-source_url = https://crates.io/api/v1/crates/serde/1.0.163/download
-source_filename = serde-1.0.163.tar.gz
-source_hash = 2113ab51b87a539ae008b5c6c02dc020ffa39afd2d83cffcb3f4eb2722cebec2
-patch_directory = serde-1.0.163
+source_url = https://crates.io/api/v1/crates/serde/1.0.203/download
+source_filename = serde-1.0.203.tar.gz
+source_hash = 7253ab4de971e72fb7be983802300c30b5a7f0c2e56fab8abfc6a214307c0094
+method = cargo
 
 [provide]
-serde-rs = serde_rs_dep
+dependency_names = serde-1-rs
+
