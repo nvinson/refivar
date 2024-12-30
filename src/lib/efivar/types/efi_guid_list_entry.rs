@@ -56,13 +56,13 @@ impl<'de> Visitor<'de> for EfiGuidListEntryVisitor {
             return Err(M::Error::custom(&"name missing"));
         };
 
-        let efiGuidResult = guid.unwrap();
-        if efiGuidResult.is_err() {
-            return Err(M::Error::custom(efiGuidResult.unwrap_err()));
+        let efi_guid_result = guid.unwrap();
+        if efi_guid_result.is_err() {
+            return Err(M::Error::custom(efi_guid_result.unwrap_err()));
         }
         Ok(EfiGuidListEntry{
             description: description.unwrap(),
-            guid: efiGuidResult.unwrap(),
+            guid: efi_guid_result.unwrap(),
             name: name.unwrap(),
         })
     }
